@@ -1,0 +1,83 @@
+<section class="flex flex-col gap-3">
+  <h2 class="text-xl font-semibold text-primary">Tablas (PrimeNG p-table)</h2>
+  <div #grid class="bento-grid" appBentoGridLayout aria-label="Galería Tablas">
+    @for (variant of variants(); track variant) {
+      @if (variant === 'selection') {
+        <app-data-table-card
+          [title]="getVariantTitle(variant)"
+          [data]="alumnos"
+          [columns]="getColumns(variant)"
+          [dataKey]="'id'"
+          [paginator]="true"
+          [rows]="3"
+          [selection]="true"
+          [selectionValue]="selectedAlumnos()"
+          (selectionChange)="selectedAlumnos.set($event)"
+          [size]="getVariantSize(variant)"
+          [accent]="true"
+          [inGrid]="true"
+        >
+          <div actionBar>
+            <p-button
+              label="Exportar"
+              icon="pi pi-download"
+              severity="secondary"
+              size="small"
+              (onClick)="exportSelected()"
+            />
+            <p-button
+              label="Limpiar"
+              icon="pi pi-times"
+              [text]="true"
+              size="small"
+              (onClick)="clearSelection()"
+            />
+          </div>
+        </app-data-table-card>
+      } @else if (variant === 'empty') {
+        <app-data-table-card
+          [title]="getVariantTitle(variant)"
+          [data]="[]"
+          [columns]="getColumns(variant)"
+          [emptyConfig]="emptyConfig"
+          [size]="getVariantSize(variant)"
+          [inGrid]="true"
+          (emptyAction)="onEmptyAction()"
+        />
+      } @else if (variant === 'cuadratura') {
+        <app-data-table-card
+          [title]="getVariantTitle(variant)"
+          [data]="$any(cuadraturaData)"
+          [columns]="$any(getColumns(variant))"
+          [totalRow]="$any(cuadraturaTotal)"
+          [size]="getVariantSize(variant)"
+          [inGrid]="true"
+        />
+      } @else if (variant === 'detalle-ingresos') {
+        <app-data-table-card
+          [title]="getVariantTitle(variant)"
+          [data]="$any(detalleIngresosData)"
+          [columns]="$any(getColumns(variant))"
+          [recordsLabel]="detalleIngresosData.length + ' registros'"
+          [size]="getVariantSize(variant)"
+          [inGrid]="true"
+        />
+      } @else {
+        <app-data-table-card
+          [title]="getVariantTitle(variant)"
+          [data]="alumnos"
+          [columns]="getColumns(variant)"
+          [paginator]="variant === 'paginator'"
+          [rows]="variant === 'paginator' ? paginatorRows() : 3"
+          [rowsPerPageOptions]="[3, 5, 10]"
+          [sortable]="variant === 'sortable'"
+          [striped]="variant === 'striped'"
+          [gridlines]="variant === 'gridlines'"
+          [size]="getVariantSize(variant)"
+          [inGrid]="true"
+          (pageChange)="variant === 'paginator' && onPaginatorPageChange($event)"
+        />
+      }
+    }
+  </div>
+</section>

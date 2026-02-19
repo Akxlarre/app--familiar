@@ -1,0 +1,44 @@
+/* ============================================
+   KpiCardSkeleton Component Styles
+   Replica el layout de KpiCard para loading state
+   ============================================ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+:host(.card-tinted) {
+  background: color-mix(in srgb, var(--color-primary) 4%, white);
+  border: 1px solid var(--accent-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.kpi-card-skeleton {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  height: 100%;
+  width: 100%;
+}
+
+.kpi-card-skeleton__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  :host {
+    padding: var(--space-4);
+  }
+}

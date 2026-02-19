@@ -1,0 +1,30 @@
+/* ============================================
+   PageContentSkeleton Component Styles
+   Replica el layout de pagina-2 / pagina-3
+   ============================================ */
+
+:host {
+  display: block;
+}
+
+.page-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.page-skeleton__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Usa el grid del design system; los hijos tienen bento-* en host */
+.page-skeleton__bento {
+  /* bento-grid ya define grid, gap, padding en layout */
+}

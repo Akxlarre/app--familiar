@@ -1,0 +1,187 @@
+/* ============================================
+   AlertCard — UX/UI moderno 2026
+   Leading accent, icono en contenedor, colores por severidad
+   :host para que los estilos se apliquen correctamente (encapsulación)
+   ============================================ */
+
+:host {
+  position: relative;
+  display: flex;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+
+/* Leading accent — barra izquierda 4px por severidad */
+.alert-card__accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  flex-shrink: 0;
+}
+
+:host.alert-card--error .alert-card__accent {
+  background: var(--state-error);
+}
+
+:host.alert-card--warning .alert-card__accent {
+  background: var(--state-warning);
+}
+
+:host.alert-card--info .alert-card__accent {
+  background: var(--state-info);
+}
+
+:host.alert-card--success .alert-card__accent {
+  background: var(--state-success);
+}
+
+/* Fondo y borde por severidad */
+:host.alert-card--error {
+  background: var(--state-error-bg);
+  border-color: var(--state-error-border);
+}
+
+:host.alert-card--warning {
+  background: var(--state-warning-bg);
+  border-color: var(--state-warning-border);
+}
+
+:host.alert-card--info {
+  background: var(--state-info-bg);
+  border-color: var(--state-info-border);
+}
+
+:host.alert-card--success {
+  background: var(--state-success-bg);
+  border-color: var(--state-success-border);
+}
+
+.alert-card__inner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-4) var(--space-4) calc(var(--space-4) + 4px);
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-card__icon-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: var(--radius-md);
+  transition: transform var(--duration-fast) ease;
+}
+
+:host.alert-card--error .alert-card__icon-wrap {
+  background: color-mix(in srgb, var(--state-error) 12%, transparent);
+  color: var(--state-error);
+}
+
+:host.alert-card--warning .alert-card__icon-wrap {
+  background: color-mix(in srgb, var(--state-warning) 12%, transparent);
+  color: var(--state-warning);
+}
+
+:host.alert-card--info .alert-card__icon-wrap {
+  background: color-mix(in srgb, var(--state-info) 12%, transparent);
+  color: var(--state-info);
+}
+
+:host.alert-card--success .alert-card__icon-wrap {
+  background: color-mix(in srgb, var(--state-success) 12%, transparent);
+  color: var(--state-success);
+}
+
+.alert-card__icon {
+  font-size: 1.125rem;
+}
+
+.alert-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-card__title {
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2) 0;
+  line-height: var(--leading-snug);
+}
+
+.alert-card__body {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-normal);
+  margin: 0;
+}
+
+.alert-card__action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
+
+  &:hover {
+    background: var(--color-primary-muted);
+    color: var(--color-primary-hover);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+  }
+}
+
+.alert-card__dismiss {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--text-muted) 12%, transparent);
+    color: var(--text-primary);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  .alert-card__icon-wrap {
+    transition: none;
+  }
+}

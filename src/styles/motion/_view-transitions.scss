@@ -1,0 +1,47 @@
+/* ============================================
+   View Transitions API — Page Transitions Premium
+   Solo el main content anima; topbar y sidebar quedan estáticos
+   Variante: híbrido premium — salida rápida (-6px), entrada suave (+8px)
+   ============================================ */
+
+/* Root: topbar + sidebar — sin animación, permanecen estáticos */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+/* Main content: salida rápida (180ms), hacia arriba -6px */
+::view-transition-old(main-content) {
+  animation: var(--duration-page-out) cubic-bezier(0.4, 0, 1, 1) both page-out;
+}
+
+/* Main content: entrada suave (280ms), desde abajo +8px */
+::view-transition-new(main-content) {
+  animation: var(--duration-page-in) cubic-bezier(0, 0, 0.2, 1) both page-in;
+}
+
+@keyframes page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Accesibilidad: respetar prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(main-content),
+  ::view-transition-new(main-content) {
+    animation: none;
+  }
+}

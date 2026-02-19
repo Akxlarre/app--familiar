@@ -1,0 +1,190 @@
+/* ============================================
+   Design System Tokens - Auto Escuelas
+   Dual Theme: Red (Escuela A) / Blue (Escuela B)
+   ============================================ */
+
+/* ============================================
+   Raíz compartida — fondo claro profesional
+   ============================================ */
+:root {
+  /* Fondos en capas */
+  --bg-base: #f7f7f8; /* fondo base — blanco cálido, no clínico */
+  --bg-surface: #ffffff; /* superficies: tarjetas, modales, sidebar */
+  --bg-elevated: #f0f0f2; /* hover de filas, secciones diferenciadas */
+  --bg-subtle: #eaeaec; /* inputs, chips, separadores */
+
+  /* Tipografía */
+  --text-primary: #1a1a2e; /* casi negro — máximo contraste */
+  --text-secondary: #52526b; /* gris azulado — datos secundarios */
+  --text-muted: #9090a8; /* placeholders, metadata */
+  --text-disabled: #c0c0d0; /* estados deshabilitados */
+
+  /* Bordes */
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --border-default: rgba(0, 0, 0, 0.09);
+  --border-strong: rgba(0, 0, 0, 0.16);
+
+  /* Sombras — sistema de 3 niveles */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.1),
+    0 24px 48px rgba(0, 0, 0, 0.06);
+  /* Fallback para tema (se sobrescribe en [data-theme]) */
+  --color-primary: #9b1d20;
+  --color-primary-hover: #c42b2f;
+  --color-primary-muted: rgba(155, 29, 32, 0.08);
+  --color-primary-text: #ffffff;
+  --accent-border: rgba(155, 29, 32, 0.2);
+  --accent-glow: rgba(155, 29, 32, 0.1);
+  --gradient-subtle: linear-gradient(
+    135deg,
+    rgba(155, 29, 32, 0.06) 0%,
+    rgba(155, 29, 32, 0.02) 100%
+  );
+
+  --shadow-focus: 0 0 0 3px var(--color-primary-muted);
+
+  /* Layout premium — sombras suaves para topbar/sidebar (sin bordes duros) */
+  --shadow-layout-topbar: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-layout-sidebar: 4px 0 24px -4px rgba(0, 0, 0, 0.04),
+    1px 0 0 0 rgba(0, 0, 0, 0.02);
+  --shadow-layout-divider: 1px 0 0 0 var(--border-subtle);
+
+  /* Overlay drawer mobile — sutil, no plomo */
+  --overlay-backdrop: rgba(0, 0, 0, 0.25);
+
+  /* Brand colors — para selector de escuela (mostrar ambas a la vez) */
+  --brand-school-a: #9b1d20;
+  --brand-school-b: #1b3f6e;
+
+  /* Estados — diferenciados del color primario */
+  --state-success: #16a34a;
+  --state-success-bg: #f0fdf4;
+  --state-success-border: #bbf7d0;
+  --state-warning: #d97706;
+  --state-warning-bg: #fffbeb;
+  --state-warning-border: #fde68a;
+  --state-error: #dc2626; /* rojo SOLO para errores, nunca como marca */
+  --state-error-bg: #fef2f2;
+  --state-error-border: #fecaca;
+  --state-info: #0284c7;
+  --state-info-bg: #f0f9ff;
+  --state-info-border: #bae6fd;
+
+  /* Radius — sistema Apple */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  /* Motion — duraciones estándar (UX premium) */
+  --duration-instant: 100ms; /* feedback inmediato */
+  --duration-fast: 200ms; /* micro-interacciones */
+  --duration-normal: 300ms; /* transiciones de página */
+  --duration-slow: 450ms; /* modales, overlays */
+  --duration-slower: 600ms; /* efectos especiales */
+  /* Page transition — híbrido premium (salida 180ms, entrada 280ms) */
+  --duration-page-out: 180ms;
+  --duration-page-in: 280ms;
+
+  /* Espaciado base 4px */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Tipografía — sistema */
+  --font-display: 'SF Pro Display', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body: 'SF Pro Text', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'SF Mono', 'JetBrains Mono', monospace;
+
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  --text-4xl: 2.25rem; /* 36px */
+  --text-5xl: 3rem; /* 48px */
+
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+}
+
+/* ============================================
+   TEMA ROJO — Escuela A
+   Personalidad: autoridad, tradición, prestigio
+   Referencia: universidades europeas, bancos centenarios
+   ============================================ */
+[data-theme='red'] {
+  --color-primary: #9b1d20;
+  --color-primary-hover: #c42b2f;
+  --color-primary-dark: #6b1214;
+  --color-primary-muted: rgba(155, 29, 32, 0.08);
+  --color-primary-tint: rgba(155, 29, 32, 0.04);
+  --color-primary-text: #ffffff;
+
+  --gradient-primary: linear-gradient(135deg, #9b1d20 0%, #c42b2f 100%);
+  --gradient-subtle: linear-gradient(
+    135deg,
+    rgba(155, 29, 32, 0.06) 0%,
+    rgba(155, 29, 32, 0.02) 100%
+  );
+
+  --accent-border: rgba(155, 29, 32, 0.2);
+  --accent-glow: rgba(155, 29, 32, 0.1);
+}
+
+/* ============================================
+   TEMA AZUL — Escuela B
+   Personalidad: solidez, confianza, profesionalismo
+   Referencia: marina, aviación, banca europea
+   ============================================ */
+[data-theme='blue'] {
+  --color-primary: #1b3f6e;
+  --color-primary-hover: #2557a0;
+  --color-primary-dark: #102440;
+  --color-primary-muted: rgba(27, 63, 110, 0.08);
+  --color-primary-tint: rgba(27, 63, 110, 0.04);
+  --color-primary-text: #ffffff;
+
+  --gradient-primary: linear-gradient(135deg, #1b3f6e 0%, #2557a0 100%);
+  --gradient-subtle: linear-gradient(
+    135deg,
+    rgba(27, 63, 110, 0.06) 0%,
+    rgba(27, 63, 110, 0.02) 100%
+  );
+
+  --accent-border: rgba(27, 63, 110, 0.2);
+  --accent-glow: rgba(27, 63, 110, 0.1);
+}
+
+/* ============================================
+   Global Typography Override
+   Solo transición de color permitida
+   ============================================ */
+* {
+  transition: color 0.18s ease;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-primary);
+}

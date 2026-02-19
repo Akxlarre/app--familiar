@@ -1,0 +1,164 @@
+<app-feature-card
+  [title]="title()"
+  [size]="size()"
+  [accent]="accent()"
+  [hasIcon]="false"
+  [inGrid]="false"
+>
+  @if (recordsLabel()) {
+    <div class="records-label text-muted text-sm">
+      {{ recordsLabel() }}
+    </div>
+  }
+  @if (selection()) {
+    <div class="action-bar" [class.action-bar--hidden]="!showActionBar()">
+      <span class="action-bar__text">
+        {{ selectionValue().length }} {{ selectionLabel() }}
+      </span>
+      <div class="action-bar__actions">
+        <ng-content select="[actionBar]" />
+      </div>
+    </div>
+  }
+
+  <div class="table-container">
+    <p-table
+      [value]="data()"
+      [paginator]="paginator()"
+      [rows]="rows()"
+      [rowsPerPageOptions]="rowsPerPageOptions()"
+      [stripedRows]="striped()"
+      [showGridlines]="gridlines()"
+      [selection]="selection() ? selectionValue() : null"
+      (selectionChange)="selection() && onSelectionChange($event)"
+      (onPage)="paginator() && onPageChange($event)"
+      [selectionMode]="selection() ? 'multiple' : undefined"
+      [dataKey]="selection() ? dataKey() : undefined"
+      responsiveLayout="stack"
+      breakpoint="768px"
+      paginatorDropdownAppendTo="body"
+      styleClass="p-datatable-sm"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          @if (selection()) {
+            <th style="width: 3rem">
+              <p-tableHeaderCheckbox />
+            </th>
+          }
+          @for (col of columns(); track col.field) {
+            @if (sortable() && col.sortable) {
+              <th [pSortableColumn]="col.field" class="text-left">
+                {{ col.header }}
+                <p-sortIcon [field]="col.field" />
+              </th>
+            } @else {
+              <th class="text-left">{{ col.header }}</th>
+            }
+          }
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          @if (selection()) {
+            <td>
+              <span class="p-datatable-column-title">Seleccionar</span>
+              <p-tableCheckbox [value]="row" />
+            </td>
+          }
+          @for (col of columns(); track col.field) {
+            <td [class]="col.cellClass">
+              <span class="p-datatable-column-title">{{ col.header }}</span>
+              @switch (col.cellType) {
+                @case ('badge') {
+                  @if (col.badgeClassFn) {
+                    <span [class]="col.badgeClassFn(getValue(row, col.field))">
+                      {{ getValue(row, col.field) }}
+                    </span>
+                  } @else {
+                    {{ getValue(row, col.field) }}
+                  }
+                }
+                @case ('badge-icon') {
+                  <span [class]="'cell-badge-icon ' + (col.badgeClassFn?.(getValue(row, col.field)) ?? 'estado-success')">
+                    @if (col.badgeIconFn) {
+                      <i [class]="'pi ' + (col.badgeIconFn!(getValue(row, col.field)) || '')"></i>
+                    }
+                    <span>{{ getValue(row, col.field) }}</span>
+                  </span>
+                }
+                @case ('chip') {
+                  @if (col.badgeClassFn) {
+                    <span [class]="'cell-chip ' + col.badgeClassFn(getValue(row, col.field))">
+                      {{ getValue(row, col.field) }}
+                    </span>
+                  } @else {
+                    {{ getValue(row, col.field) }}
+                  }
+                }
+                @case ('progress') {
+                  <div class="cell-progress">
+                    <span class="cell-progress__value">{{ getProgressValue(row, col.field) | number : '1.1-1' }}%</span>
+                    <div class="cell-progress__bar" role="progressbar" [attr.aria-valuenow]="getProgressValue(row, col.field)" aria-valuemin="0" aria-valuemax="100">
+                      <div class="cell-progress__fill" [style.width.%]="getProgressValue(row, col.field)"></div>
+                    </div>
+                  </div>
+                }
+                @case ('currency') {
+                  <span class="tabular-nums">{{ formatCurrency(getValue(row, col.field), col) }}</span>
+                }
+                @default {
+                  {{ getValue(row, col.field) }}
+                }
+              }
+            </td>
+          }
+        </tr>
+      </ng-template>
+      @if (totalRow(); as total) {
+        <ng-template pTemplate="footer">
+          <tr class="p-datatable-row-total">
+            @if (selection()) {
+              <td></td>
+            }
+            @for (col of columns(); track col.field) {
+              <td [class]="col.cellClass">
+                @switch (col.cellType) {
+                  @case ('progress') {
+                    <span class="font-semibold tabular-nums">{{ getProgressValue(total, col.field) | number : '1.1-1' }}%</span>
+                  }
+                  @case ('currency') {
+                    <span class="font-semibold tabular-nums">{{ formatCurrency(getValue(total, col.field), col) }}</span>
+                  }
+                  @default {
+                    <span class="font-semibold">{{ getValue(total, col.field) }}</span>
+                  }
+                }
+              </td>
+            }
+          </tr>
+        </ng-template>
+      }
+      @if (emptyConfig(); as empty) {
+        <ng-template pTemplate="empty">
+          <div class="empty-state">
+            <i [class]="'pi ' + (empty.icon ?? 'pi-inbox') + ' empty-state__icon'"></i>
+            <p class="empty-state__message">{{ empty.message }}</p>
+            @if (empty.subtitle) {
+              <p class="empty-state__subtitle">{{ empty.subtitle }}</p>
+            }
+            @if (empty.actionLabel) {
+              <p-button
+                [label]="empty.actionLabel"
+                icon="pi pi-plus"
+                severity="secondary"
+                size="small"
+                (onClick)="onEmptyAction()"
+              />
+            }
+          </div>
+        </ng-template>
+      }
+    </p-table>
+  </div>
+</app-feature-card>

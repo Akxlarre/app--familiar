@@ -1,0 +1,271 @@
+/* ============================================
+   CategoryBreakdownCard Component
+   Tarjetas de distribución por categoría con barras de progreso
+   ============================================ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+:host(.card--animate-entry) {
+  opacity: 0;
+}
+
+:host(.card-accent) {
+  border: 1px solid var(--accent-border);
+  border-top: 3px solid var(--color-primary);
+  box-shadow: var(--shadow-md), 0 0 0 1px var(--accent-border) inset;
+}
+
+:host(.card-tinted) {
+  background: color-mix(in srgb, var(--color-primary) 4%, white);
+  border: 1px solid var(--accent-border);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================
+   Header
+   ============================================ */
+
+.category-breakdown__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.category-breakdown__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-muted);
+  display: grid;
+  place-items: center;
+  color: var(--color-primary);
+  flex-shrink: 0;
+  font-size: var(--text-xl);
+}
+
+.category-breakdown__icon ::ng-deep > * {
+  display: block;
+}
+
+.category-breakdown__meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.category-breakdown__title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  line-height: var(--leading-snug);
+  margin: 0;
+}
+
+/* ============================================
+   Body - Lista de categorías
+   ============================================ */
+
+.category-breakdown__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  overflow-y: auto;
+}
+
+.category-breakdown__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.category-breakdown__row--clickable {
+  cursor: pointer;
+  padding: var(--space-2);
+  margin: calc(-1 * var(--space-2));
+  border-radius: var(--radius-md);
+  transition: background 0.15s ease;
+}
+
+.category-breakdown__row--clickable:hover {
+  background: var(--bg-elevated);
+}
+
+.category-breakdown__row--clickable:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.category-breakdown__row-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.category-breakdown__label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.category-breakdown__detail {
+  font-size: var(--text-xs);
+  flex-shrink: 0;
+}
+
+/* ============================================
+   Barra de progreso
+   ============================================ */
+
+.category-breakdown__bar {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-subtle);
+  overflow: hidden;
+}
+
+.category-breakdown__bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.category-breakdown__bar-fill[data-variant='success'] {
+  background: var(--state-success);
+}
+
+.category-breakdown__bar-fill[data-variant='expense'] {
+  background: var(--state-error);
+}
+
+.category-breakdown__bar-fill[data-variant='primary'] {
+  background: var(--color-primary);
+}
+
+.category-breakdown__bar-fill[data-variant='neutral'] {
+  background: var(--text-muted);
+}
+
+/* ============================================
+   Montos y porcentajes
+   ============================================ */
+
+.category-breakdown__row-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.category-breakdown__amount {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+.category-breakdown__amount[data-variant='success'] {
+  color: var(--state-success);
+}
+
+.category-breakdown__amount[data-variant='expense'] {
+  color: var(--state-error);
+}
+
+.category-breakdown__amount[data-variant='primary'] {
+  color: var(--color-primary);
+}
+
+.category-breakdown__amount[data-variant='neutral'] {
+  color: var(--text-secondary);
+}
+
+.category-breakdown__percent {
+  font-size: var(--text-xs);
+}
+
+/* ============================================
+   Total
+   ============================================ */
+
+.category-breakdown__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-4);
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+  gap: var(--space-3);
+}
+
+.category-breakdown__total-label {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.category-breakdown__total-value {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+}
+
+.category-breakdown__total-value[data-variant='success'] {
+  color: var(--state-success);
+}
+
+.category-breakdown__total-value[data-variant='expense'] {
+  color: var(--state-error);
+}
+
+.category-breakdown__total-value[data-variant='primary'] {
+  color: var(--color-primary);
+}
+
+.category-breakdown__total-value[data-variant='neutral'] {
+  color: var(--text-secondary);
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+
+.category-breakdown__footer {
+  width: 100%;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+  :host {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .category-breakdown__icon {
+    width: 32px;
+    height: 32px;
+    font-size: var(--text-lg);
+  }
+
+  .category-breakdown__title {
+    font-size: var(--text-base);
+  }
+}

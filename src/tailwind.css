@@ -1,0 +1,35 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* Tailwind v4 Theme Configuration */
+@theme {
+    /* Font families - Design System Tokens */
+    --font-display: var(--font-display);
+    --font-body: var(--font-body);
+
+    /* Colors - Design System Tokens */
+    --color-primary: var(--color-primary);
+    --color-primary-hover: var(--color-primary-hover);
+    --color-primary-text: var(--color-primary-text);
+    --color-primary-muted: var(--color-primary-muted);
+
+    --color-surface: var(--bg-surface);
+    --color-base: var(--bg-base);
+    --color-elevated: var(--bg-elevated);
+
+    --color-success: var(--state-success);
+    --color-warning: var(--state-warning);
+    --color-error: var(--state-error);
+    --color-info: var(--state-info);
+
+    /* Text/Muted - for metadata, secondary content */
+    --color-muted: var(--text-muted);
+    --color-secondary: var(--text-secondary);
+
+    /* Radius Override */
+    --radius-sm: var(--radius-sm);
+    --radius-md: var(--radius-md);
+    --radius-lg: var(--radius-lg);
+    --radius-xl: var(--radius-xl);
+    --radius-2xl: var(--radius-2xl);
+}

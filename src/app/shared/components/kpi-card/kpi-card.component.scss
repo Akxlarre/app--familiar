@@ -1,0 +1,135 @@
+/* ============================================
+   KpiCard Component Styles
+   Specialized card for KPI metrics
+   ============================================ */
+
+:host {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    /* Inherit card styles from global or mixin if possible, 
+     but since we are using classes on host, we need to match behavior */
+    gap: var(--space-4);
+    padding: var(--space-6);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+
+    /* Tinted variant styles applied via class on host */
+    &.card-tinted {
+        background: color-mix(in srgb, var(--color-primary) 4%, white);
+        border: 1px solid var(--accent-border);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Bento specific override if needed */
+    &.bento-1x1 {
+        /* grid-column handled by parent grid on the host element itself */
+    }
+}
+
+.kpi-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    height: 100%;
+    width: 100%;
+}
+
+.kpi-card__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    display: grid;
+    place-items: center;
+    font-size: var(--text-2xl);
+    flex-shrink: 0;
+}
+
+.kpi-card__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.kpi-card__value {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    line-height: var(--leading-tight);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.kpi-card__label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-secondary);
+    line-height: var(--leading-snug);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.kpi-card__subtitle {
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    color: var(--text-muted);
+    line-height: var(--leading-snug);
+}
+
+.kpi-card__trend {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    margin-top: var(--space-1);
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-full);
+    width: fit-content;
+
+    &[data-trend='up'] {
+        color: var(--state-success);
+        background: var(--state-success-bg);
+        border: 1px solid var(--state-success-border);
+    }
+
+    &[data-trend='down'] {
+        color: var(--state-error);
+        background: var(--state-error-bg);
+        border: 1px solid var(--state-error-border);
+    }
+
+    &[data-trend='neutral'] {
+        color: var(--text-muted);
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-subtle);
+    }
+
+    i {
+        font-size: 0.75em;
+    }
+}
+
+@media (max-width: 768px) {
+    :host {
+        padding: var(--space-4);
+    }
+
+    .kpi-card__icon {
+        width: 40px;
+        height: 40px;
+        font-size: var(--text-xl);
+    }
+
+    .kpi-card__value {
+        font-size: var(--text-2xl);
+    }
+}

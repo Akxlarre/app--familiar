@@ -1,0 +1,37 @@
+/* Reserva espacio para el scrollbar para evitar layout shift al expandir bento grid */
+.main-content {
+  scrollbar-gutter: stable;
+  /* View Transitions API: solo este área anima; topbar y sidebar quedan estáticos */
+  view-transition-name: main-content;
+}
+
+/* Contenedor de modales. Vacío: display none (no bloquea clics).
+   Con modal: cubre viewport, bloquea fondo y permite interacción. */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.modal-overlay:empty {
+  display: none;
+}
+
+/* Wrapper: bloquea el fondo y recibe clics. Creado por la directiva al mover el modal. */
+.modal-overlay__wrapper {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+/* El modal dentro del wrapper cubre el viewport */
+.modal-overlay__wrapper > * {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
