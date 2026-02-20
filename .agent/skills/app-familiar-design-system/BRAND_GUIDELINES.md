@@ -1,17 +1,17 @@
-# 🎓 Design System — Sistema de Auto Escuelas
+# 🏠 Design System — App Familiar
 > Versión: 2.0 | Stack: Angular 20 + Tailwind v4 + SCSS + GSAP 3
 
 ---
 
 ## 📌 Contexto del Proyecto
 
-Aplicación de gestión para **dos auto escuelas con branding distinto**.
-El sistema comparte 100% de los componentes y la estructura, pero cambia de tema visual según la escuela activa.
+Aplicación familiar para gestionar **inventario, recetas, comidas y organización del hogar**.
+El sistema soporta dos temas visuales para personalizar la experiencia.
 
-| Escuela | Tema | Color primario | Personalidad |
-|---------|------|----------------|--------------|
-| Escuela A | `theme-red` | `#9B1D20` borgoña | Autoridad, tradición, prestigio |
-| Escuela B | `theme-blue` | `#1B3F6E` marino | Solidez, confianza, profesionalismo |
+| Tema | Color primario | Personalidad |
+|------|----------------|--------------|
+| Tema A (rojo) | `#9B1D20` borgoña | Cálido, acogedor, hogareño |
+| Tema B (azul) | `#1B3F6E` marino | Fresco, ordenado, tranquilo |
 
 El cambio de tema se aplica a nivel `<html data-theme="red | blue">` y afecta únicamente las **CSS variables de color**. Todo lo demás es idéntico en ambos temas.
 
@@ -23,7 +23,7 @@ El cambio de tema se aplica a nivel `<html data-theme="red | blue">` y afecta ú
 
 ### Principios irrenunciables
 
-- **Seriedad institucional** — empresa con trayectoria, no una startup
+- **Claridad y usabilidad** — interfaz pensada para el día a día familiar
 - **Legibilidad ante todo** — usuarios de 35-60 años, uso diurno intensivo 8+ horas
 - **Profundidad sin oscuridad** — sombras y bordes crean capas, no dark mode
 - **Color como acento** — el color primario se reserva para CTAs, iconos activos y highlights. El resto es neutro
@@ -101,9 +101,8 @@ El cambio de tema se aplica a nivel `<html data-theme="red | blue">` y afecta ú
 }
 
 /* ============================================
-   TEMA ROJO — Escuela A
-   Personalidad: autoridad, tradición, prestigio
-   Referencia: universidades europeas, bancos centenarios
+   TEMA ROJO — Tema A
+   Personalidad: cálido, acogedor, hogareño
    ============================================ */
 [data-theme="red"] {
   --color-primary:       #9B1D20;
@@ -121,9 +120,8 @@ El cambio de tema se aplica a nivel `<html data-theme="red | blue">` y afecta ú
 }
 
 /* ============================================
-   TEMA AZUL — Escuela B
-   Personalidad: solidez, confianza, profesionalismo
-   Referencia: marina, aviación, banca europea
+   TEMA AZUL — Tema B
+   Personalidad: fresco, ordenado, tranquilo
    ============================================ */
 [data-theme="blue"] {
   --color-primary:       #1B3F6E;

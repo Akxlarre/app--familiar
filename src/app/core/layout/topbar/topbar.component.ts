@@ -38,7 +38,7 @@ import { PressFeedbackDirective } from '@core/directives/press-feedback.directiv
         >
           <i class="pi pi-bars text-primary text-xl"></i>
         </button>
-        <div class="topbar__school-section">
+        <div class="topbar__school-section" *ngIf="false">
           <app-school-selector />
         </div>
         <div class="topbar__center flex flex-1 items-center gap-4 px-4 min-w-0">

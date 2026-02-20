@@ -59,7 +59,7 @@ Each bento grid section MUST have exactly **1 anchor element** using `.card-acce
   <app-feature-card
     size="hero"
     [accent]="true"  <!-- Único elemento ancla -->
-    title="Resumen de la Escuela"
+    title="Resumen del Hogar"
   >
     <!-- content -->
   </app-feature-card>
@@ -113,14 +113,14 @@ Los KPIs siguen un patrón fijo:
 ```
 ┌─────────────────────────────────────────────┐
 │ HERO (12×2) .card-accent                    │
-│ "Resumen de la Escuela"                     │
+│ "Resumen del Hogar"                         │
 └─────────────────────────────────────────────┘
 ┌────────┬────────┬────────┬────────┐
-│ KPI 1  │ KPI 2  │ KPI 3  │ KPI 4  │ (4 × 1x1 tinted)
+│ KPI 1  │ KPI 2  │ KPI 3  │ KPI 4  │ (Inventario, Recetas, Comidas, etc.)
 │ (3×1)  │ (3×1)  │ (3×1)  │ (3×1)  │
 └────────┴────────┴────────┴────────┘
 ┌──────────────────┬──────────────────┐
-│ Gráfico Alumnos  │ Agenda Clases    │ (2 × 2x2)
+│ Inventario       │ Comidas Semana   │ (2 × 2x2)
 │ (6×2)            │ (6×2)            │
 └──────────────────┴──────────────────┘
 ```
@@ -129,7 +129,7 @@ Los KPIs siguen un patrón fijo:
 ```
 ┌─────────────────────────────────────────────┐
 │ HEADER (12×1) .card-accent                  │
-│ "Alumnos Activos" + filtros                 │
+│ "Inventario" / "Recetas" + filtros          │
 └─────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────┐
 │ TABLA (12×2+)                               │

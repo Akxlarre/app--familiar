@@ -1,34 +1,33 @@
-import { Component, AfterViewInit, ElementRef, inject, viewChild } from '@angular/core';
+import { Component, AfterViewInit, ElementRef, inject, viewChild, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { TimelineModule } from 'primeng/timeline';
-import { KpiCardComponent, KpiData } from '@shared/components/kpi-card/kpi-card.component';
 import { FeatureCardComponent } from '@shared/components/feature-card/feature-card.component';
 import { GsapAnimationsService } from '@core/services/gsap-animations.service';
 import { BentoGridLayoutDirective } from '@core/directives/bento-grid-layout.directive';
+import { AuthService } from '@core/services/auth.service';
+import { FinanceSummaryService } from '@core/services/finance-summary.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     ButtonModule,
-    TimelineModule,
-    KpiCardComponent,
     FeatureCardComponent,
     BentoGridLayoutDirective,
   ],
   template: `
     <div #container class="flex flex-col gap-6 font-body">
-      <!-- Title Section -->
       <div>
         <h1 class="text-3xl font-bold font-display text-primary">Dashboard</h1>
-        <p class="text-secondary text-lg">Bienvenido de vuelta, <span class="text-primary font-bold">Jorge</span></p>
+        <p class="text-secondary text-lg">
+          Bienvenido de vuelta, <span class="text-primary font-bold">{{ displayName() }}</span>
+        </p>
       </div>
 
-      <!-- Bento Grid Layout -->
       <section #grid class="bento-grid" appBentoGridLayout aria-label="Panel principal">
-        <!-- Hero ancla - 1 por sección -->
         <app-feature-card
           title="Resumen"
           size="hero"
@@ -36,83 +35,64 @@ import { BentoGridLayoutDirective } from '@core/directives/bento-grid-layout.dir
           [hasIcon]="false"
           [inGrid]="true"
         >
-          <p class="text-secondary">Vista general de la operación diaria</p>
+          <p class="text-secondary">Vista general de tu hogar</p>
         </app-feature-card>
 
-        <!-- KPIs - 4 × bento-1x1 con card-tinted -->
-        @for (kpi of kpis; track kpi.id) {
-          <app-kpi-card [data]="kpi" />
-        }
-
-        <!-- Actividad Reciente - bento-3x2 -->
-        <app-feature-card title="Actividad Reciente" size="3x2" [inGrid]="true">
-          <p-timeline [value]="events" align="left" styleClass="w-full">
-            <ng-template pTemplate="content" let-event>
-              <div class="mb-4">
-                <span class="text-sm font-bold text-primary block">{{ event.status }}</span>
-                <span class="text-xs text-muted font-medium">{{ event.date }}</span>
-              </div>
-            </ng-template>
-            <ng-template pTemplate="marker" let-event>
-              <span class="w-3 h-3 rounded-full" [style.background]="event.color"></span>
-            </ng-template>
-          </p-timeline>
-        </app-feature-card>
-
-        <!-- Alertas y Accesos Rápidos - bento-1x2 -->
-        <div class="bento-1x2 flex flex-col gap-4">
-          <app-feature-card title="Alertas Importantes" [hasIcon]="false">
+        <!-- Widget Finanzas -->
+        <app-feature-card title="Finanzas del mes" size="2x2" [inGrid]="true">
+          @if (budgetLoading()) {
+            <div class="animate-pulse h-20 bg-subtle rounded"></div>
+          } @else {
             <div class="flex flex-col gap-3">
-              <div class="alert-card alert-error">
-                <span class="text-sm font-bold block">3 Documentos vencidos</span>
-                <span class="text-xs">Vehículos requieren atención</span>
+              <div class="flex justify-between text-sm">
+                <span class="text-secondary">Presupuesto consumido</span>
+                <span class="font-semibold text-primary">{{ budgetPercent() }}%</span>
               </div>
-              <div class="alert-card alert-warning">
-                <span class="text-sm font-bold block">12 Pagos pendientes</span>
-                <span class="text-xs">Revisar cuentas por cobrar</span>
+              <div
+                class="h-3 rounded-full bg-subtle overflow-hidden"
+                role="progressbar"
+                [attr.aria-valuenow]="budgetPercent()"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                <div
+                  class="h-full rounded-full transition-all"
+                  [class.bg-primary]="budgetPercent() <= 100"
+                  [class.bg-state-error]="budgetPercent() > 100"
+                  [style.width.%]="budgetPercentDisplay()"
+                ></div>
               </div>
+              <div class="flex justify-between text-sm text-secondary">
+                <span>{{ totalSpent() | number : '1.0-0' }} $ gastados</span>
+                <span>{{ totalBudget() | number : '1.0-0' }} $ presupuestado</span>
+              </div>
+              <p class="text-sm text-muted">Balance: {{ balance() | number : '1.0-0' }} $ · Ahorro: {{ savingsRate() }}%</p>
+              <a
+                pButton
+                [routerLink]="['/app/finanzas']"
+                label="Ver finanzas"
+                icon="pi pi-chart-pie"
+                severity="secondary"
+                class="w-full"
+              ></a>
             </div>
-          </app-feature-card>
+          }
+        </app-feature-card>
 
-          <app-feature-card title="Accesos Rápidos" [hasIcon]="false">
-            <div class="flex flex-col gap-2">
-              <button class="btn-primary w-full">
-                <i class="pi pi-plus"></i> Nueva Matrícula
-              </button>
-              <button class="btn-secondary w-full">
-                <i class="pi pi-calendar"></i> Ver Agenda
-              </button>
-              <button class="btn-secondary w-full">
-                <i class="pi pi-dollar"></i> Registrar Pago
-              </button>
-            </div>
-          </app-feature-card>
-        </div>
+        <app-feature-card title="Accesos Rápidos" size="2x1" [inGrid]="true" [hasIcon]="false">
+          <div class="flex flex-col gap-2">
+            <a pButton [routerLink]="['/app/finanzas']" class="btn-primary w-full" routerLinkActive="router-link-active">
+              <i class="pi pi-wallet"></i> Finanzas
+            </a>
+            <a pButton [routerLink]="['/app/configuracion/mi-hogar']" class="btn-secondary w-full">
+              <i class="pi pi-home"></i> Mi hogar
+            </a>
+          </div>
+        </app-feature-card>
       </section>
     </div>
   `,
   styles: [`
-    .alert-card {
-      padding: var(--space-3);
-      border-radius: var(--radius-md);
-      border: 1px solid;
-    }
-    .alert-error {
-      background: var(--state-error-bg);
-      border-color: var(--state-error-border);
-      color: var(--state-error);
-    }
-    .alert-error span.text-xs {
-      color: var(--text-secondary);
-    }
-    .alert-warning {
-      background: var(--state-warning-bg);
-      border-color: var(--state-warning-border);
-      color: var(--state-warning);
-    }
-    .alert-warning span.text-xs {
-      color: var(--text-secondary);
-    }
     .btn-primary {
       background: var(--color-primary);
       color: var(--color-primary-text);
@@ -127,9 +107,11 @@ import { BentoGridLayoutDirective } from '@core/directives/bento-grid-layout.dir
       gap: var(--space-2);
       cursor: pointer;
       transition: background 0.2s ease;
+      text-decoration: none;
     }
     .btn-primary:hover {
       background: var(--color-primary-hover);
+      color: var(--color-primary-text);
     }
     .btn-secondary {
       background: var(--bg-surface);
@@ -145,61 +127,57 @@ import { BentoGridLayoutDirective } from '@core/directives/bento-grid-layout.dir
       gap: var(--space-2);
       cursor: pointer;
       transition: background 0.2s ease;
+      text-decoration: none;
     }
     .btn-secondary:hover {
       background: var(--bg-elevated);
+      color: var(--text-primary);
     }
   `],
 })
-export class DashboardComponent implements AfterViewInit {
+export class DashboardComponent implements OnInit, AfterViewInit {
   private gsap = inject(GsapAnimationsService);
+  private auth = inject(AuthService);
+  private financeSummary = inject(FinanceSummaryService);
 
   grid = viewChild.required<ElementRef<HTMLElement>>('grid');
 
-  kpis: KpiData[] = [
-    {
-      id: '1',
-      label: 'Alumnos Activos',
-      value: 234,
-      suffix: '',
-      valueDisplay: '234',
-      icon: 'pi pi-users',
-      trend: 'up',
-      trendValue: '+12% vs mes anterior',
-    },
-    {
-      id: '2',
-      label: 'Clases Hoy',
-      value: 18,
-      valueDisplay: '18',
-      subtitle: '12 prácticas, 6 teóricas',
-      icon: 'pi pi-check-square',
-    },
-    {
-      id: '3',
-      label: 'Ingresos Mes',
-      value: 82,
-      valueDisplay: '$8.2M',
-      icon: 'pi pi-dollar',
-      trend: 'up',
-      trendValue: '+8% vs mes anterior',
-    },
-    {
-      id: '4',
-      label: 'Vehículos',
-      value: 8,
-      valueDisplay: '8 / 12',
-      subtitle: 'En uso / Total',
-      icon: 'pi pi-car',
-    },
-  ];
+  displayName = signal<string>('Usuario');
+  budgetLoading = signal(true);
+  totalBudget = signal(0);
+  totalSpent = signal(0);
+  balance = signal(0);
+  savingsRate = signal(0);
 
-  events = [
-    { status: 'Nueva matrícula: Maria González - Clase B', date: 'Hace 5 min', color: 'var(--state-info)' },
-    { status: 'Pago recibido: $280.000 - Juan Pérez', date: 'Hace 12 min', color: 'var(--state-success)' },
-    { status: 'Clase completada: Instructor Carlos - Ana Martínez', date: 'Hace 28 min', color: 'var(--color-primary)' },
-    { status: 'Documento vencido: Vehículo ABC-123 - Revisión técnica', date: 'Hace 1 hora', color: 'var(--state-error)' },
-  ];
+  budgetPercent = signal(0);
+  budgetPercentDisplay = signal(0);
+
+  ngOnInit(): void {
+    const user = this.auth.currentUser();
+    if (user?.name) this.displayName.set(user.name);
+
+    const householdId = user?.householdId;
+    if (!householdId) {
+      this.budgetLoading.set(false);
+      return;
+    }
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+
+    this.financeSummary.getSummary(householdId, year, month).then((res) => {
+      this.budgetLoading.set(false);
+      if (res.data) {
+        this.totalBudget.set(res.data.totalBudget);
+        this.totalSpent.set(res.data.totalSpent);
+        this.balance.set(res.data.balance);
+        this.savingsRate.set(Math.round(res.data.savingsRate * 10) / 10);
+        this.budgetPercent.set(Math.round(res.data.budgetUsedPercent * 10) / 10);
+        this.budgetPercentDisplay.set(Math.min(100, res.data.budgetUsedPercent));
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
     this.gsap.animateBentoGrid(this.grid().nativeElement);

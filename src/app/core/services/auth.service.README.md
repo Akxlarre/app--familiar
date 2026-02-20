@@ -2,29 +2,28 @@
 
 ## Propósito
 
-Gestión de autenticación de usuarios. Actualmente es un stub con datos mock para desarrollo. Preparado para integración futura con Supabase Auth.
+Gestión de autenticación con Supabase. Mantiene el usuario actual desde `auth.users` y la tabla `profiles`, escucha cambios de sesión y expone login/logout.
 
 ## API pública
 
 | Miembro | Tipo | Descripción |
 |---------|------|-------------|
-| `currentUser` | `Signal<User \| null>` | Usuario actual (null si no autenticado) |
+| `currentUser` | `Signal<User \| null>` | Usuario actual (null si no autenticado). Incluye id, name, email, role, initials, avatarUrl, householdId. |
 | `isAuthenticated` | `ComputedSignal<boolean>` | true si hay usuario logueado |
-| `canSwitchSchool` | `ComputedSignal<boolean>` | true si el usuario puede cambiar de escuela |
-| `logout()` | `void` | Cierra sesión (stub) |
-| `setUser(user)` | `void` | Establece usuario (para login real futuro) |
+| `canSwitchSchool` | `ComputedSignal<boolean>` | Siempre false (compatibilidad con SchoolSelector oculto) |
+| `whenReady` | `Promise<void>` | Resuelve cuando la comprobación inicial de sesión ha terminado. Usado por AuthGuard. |
+| `login(email, password)` | `Promise<{ error: Error \| null }>` | Inicia sesión con Supabase. El listener actualiza currentUser. |
+| `logout()` | `void` | Cierra sesión en Supabase, limpia estado y redirige a `/` |
+| `setUser(user)` | `void` | Establece usuario manualmente (tests o casos edge) |
 
 ## Cuándo usarlo
 
 - Mostrar datos del usuario actual (nombre, rol, iniciales)
-- Proteger rutas o mostrar/ocultar UI según autenticación
-- Verificar permisos (ej. `canSwitchSchool` para el selector de escuela)
-
-## Cuándo no usarlo
-
-- Para login/logout real → usar `SupabaseService` cuando esté integrado
-- Para datos de sesión de Supabase → usar `SupabaseService.getUser()`
+- Proteger rutas con AuthGuard
+- Login desde LoginComponent vía `authService.login()`
 
 ## Dependencias
 
-- Ninguna externa. Modelo `User` de `@core/models/user.model`.
+- `SupabaseService` — signIn, signOut, getUser, client para query a `profiles`
+- `Router` — redirección tras logout
+- Modelo `User` y `getInitialsFromDisplayName` de `@core/models/user.model`

@@ -1,15 +1,24 @@
-# Autoescuela Chillán - Sistema de Gestión
+# App Familiar - Gestión del Hogar
+
+Aplicación familiar para gestionar inventario, recetas, comidas y organización del hogar.
 
 Frontend Angular 20 + Supabase.
 
+## 🎯 Propósito
+
+- **Inventario**: Control de productos y existencias del hogar
+- **Recetas**: Base de recetas y planificación de comidas
+- **Comidas**: Planificación semanal y menús
+- **Gestión familiar**: Organización y tareas del hogar
+
 ## 🎨 Sistema de Diseño
 
-El proyecto utiliza un sistema de diseño personalizado con soporte para **doble tema** (Escuela A / Escuela B) y layouts tipo **Bento Grid**.
+El proyecto utiliza un sistema de diseño personalizado con soporte para **doble tema** (Tema A / Tema B) y layouts tipo **Bento Grid**.
 
 ### Temas
 El sistema soporta dos temas principales gestionados por `ThemeService`:
-- **Escuela A (`red`)**: Tema institucional, color primario `#9B1D20`.
-- **Escuela B (`blue`)**: Tema secundario, color primario `#1B3F6E`.
+- **Tema A (`red`)**: Cálido, acogedor. Color primario `#9B1D20`.
+- **Tema B (`blue`)**: Fresco, ordenado. Color primario `#1B3F6E`.
 
 El tema se persiste automáticamente en `localStorage`.
 

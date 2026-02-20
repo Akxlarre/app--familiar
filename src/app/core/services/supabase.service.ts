@@ -20,8 +20,8 @@ export class SupabaseService {
   }
 
   // Auth
-  async signUp(email: string, password: string) {
-    return await this.supabase.auth.signUp({ email, password });
+  async signUp(email: string, password: string, options?: { data?: Record<string, unknown> }) {
+    return await this.supabase.auth.signUp({ email, password, options });
   }
 
   async signIn(email: string, password: string) {
@@ -34,5 +34,9 @@ export class SupabaseService {
 
   async getUser() {
     return await this.supabase.auth.getUser();
+  }
+
+  async resetPasswordForEmail(email: string) {
+    return await this.supabase.auth.resetPasswordForEmail(email);
   }
 }

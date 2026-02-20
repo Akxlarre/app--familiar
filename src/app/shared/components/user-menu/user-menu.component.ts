@@ -141,7 +141,6 @@ export class UserMenuComponent {
 
   logout(): void {
     this.authService.logout();
-    // TODO: router.navigate(['/login']) cuando AuthService esté implementado
   }
 
   @HostListener('document:keydown.escape')

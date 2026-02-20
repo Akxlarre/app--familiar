@@ -1,9 +1,4 @@
-export type UserRole = 'Administrador' | 'Secretaria' | 'Instructor' | string;
-
-export interface UserPermissions {
-  /** Secretaria con este permiso puede cambiar entre escuelas (concedido por admin) */
-  canSwitchSchool?: boolean;
-}
+export type UserRole = 'admin' | 'member';
 
 export interface User {
   id: string;
@@ -12,5 +7,15 @@ export interface User {
   role: UserRole;
   initials: string;
   avatarUrl?: string;
-  permissions?: UserPermissions;
+  householdId?: string;
+}
+
+/**
+ * Genera iniciales desde display_name (ej: "María López" -> "ML").
+ */
+export function getInitialsFromDisplayName(displayName: string): string {
+  const parts = displayName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }

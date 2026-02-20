@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './core/layout/main-layout/main-layout.component';
+import { authGuard } from './core/guards/auth.guard';
+import { householdGuard } from './core/guards/household.guard';
 
 export const routes: Routes = [
   {
@@ -10,14 +12,27 @@ export const routes: Routes = [
   {
     path: 'app',
     component: MainLayoutComponent,
+    canActivate: [authGuard, householdGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'setup-hogar',
+        loadComponent: () =>
+          import('./features/setup-hogar/setup-hogar.component').then(
+            (m) => m.SetupHogarComponent
+          ),
+      },
       {
         path: 'dashboard',
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then(
             (m) => m.DashboardComponent
           ),
+      },
+      {
+        path: 'finanzas',
+        loadChildren: () =>
+          import('./features/finanzas/finanzas.routes').then((m) => m.FINANZAS_ROUTES),
       },
       {
         path: 'pagina-1',
@@ -53,6 +68,19 @@ export const routes: Routes = [
         path: 'pagina-7',
         loadComponent: () =>
           import('./features/pagina-7/pagina-7.component').then((m) => m.Pagina7Component),
+      },
+      {
+        path: 'configuracion',
+        children: [
+          { path: '', redirectTo: 'mi-hogar', pathMatch: 'full' },
+          {
+            path: 'mi-hogar',
+            loadComponent: () =>
+              import('./features/configuracion/mi-hogar/mi-hogar.component').then(
+                (m) => m.MiHogarComponent
+              ),
+          },
+        ],
       },
     ],
   },

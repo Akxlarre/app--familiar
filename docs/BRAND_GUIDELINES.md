@@ -1,19 +1,19 @@
-# Guía de Marca y Estilo - Autoescuela Chillán
+# Guía de Marca y Estilo - App Familiar
 
 ## 🎨 Identidad Visual
 
-El sistema utiliza una identidad dual para representar a las dos instituciones:
-- **Escuela A (Rojo)**: Tradicional, seria, prestigiosa.
-- **Escuela B (Azul)**: Moderna, confiable, sólida.
+El sistema utiliza una identidad dual para personalizar la experiencia:
+- **Tema A (Rojo)**: Cálido, acogedor, hogareño.
+- **Tema B (Azul)**: Fresco, ordenado, tranquilo.
 
 ## 🔤 Tipografía
 
-La tipografía ha sido seleccionada priorizando la funcionalidad y legibilidad en interfaces de datos densos, sin sacrificar la personalidad institucional.
+La tipografía ha sido seleccionada priorizando la funcionalidad y legibilidad en interfaces de datos densos, sin sacrificar la personalidad acogedora.
 
 ### Fuentes Principales
 | Uso | Fuente | Origen | Características |
 |-----|--------|--------|-----------------|
-| **Display / Títulos** | **Bricolage Grotesque** | Google Fonts | Carácter institucional, peso visual, ideal para KPIs y encabezados. |
+| **Display / Títulos** | **Bricolage Grotesque** | Google Fonts | Carácter amigable, peso visual, ideal para KPIs y encabezados. |
 | **UI / Body / Tablas** | **Geist Sans** | Vercel / CDN | Diseñada para interfaces, excelente legibilidad a tamaños pequeños (12-13px). |
 | **Código / Mono** | **Geist Mono** | Vercel / CDN | Alineación perfecta para datos crudos. |
 
@@ -43,11 +43,11 @@ La tipografía ha sido seleccionada priorizando la funcionalidad y legibilidad e
 ## 🎭 Color
 
 ### Sistema de Tema Dual
-El color primario cambia según la escuela seleccionada. NUNCA usar valores hex hardcodeados para elementos de marca.
+El color primario cambia según el tema seleccionado. NUNCA usar valores hex hardcodeados para elementos de marca.
 
 - **Variable**: `var(--color-primary)`
-- **Escuela A**: `#9B1D20` (Rojo)
-- **Escuela B**: `#1B3F6E` (Azul)
+- **Tema A**: `#9B1D20` (Rojo)
+- **Tema B**: `#1B3F6E` (Azul)
 
 ### Restricciones
 - **No usar modo oscuro**: El sistema está diseñado para "papel digital" (fondos claros, alto contraste).
@@ -65,4 +65,4 @@ El color primario cambia según la escuela seleccionada. NUNCA usar valores hex 
     - `accent`: Borde superior de color primario para énfasis.
 
 ---
-*Documento generado por Antigravity - Última actualización: Febrero 2026*
+*Documento generado — Última actualización: Febrero 2026*

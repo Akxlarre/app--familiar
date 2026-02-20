@@ -22,6 +22,17 @@ export class MenuConfigService {
       ],
     },
     {
+      label: 'Finanzas',
+      items: [
+        { label: 'Resumen', icon: 'pi pi-chart-pie', routerLink: '/app/finanzas' },
+        { label: 'Transacciones', icon: 'pi pi-list', routerLink: '/app/finanzas/transacciones' },
+        { label: 'Presupuesto', icon: 'pi pi-wallet', routerLink: '/app/finanzas/presupuesto' },
+        { label: 'Cuentas', icon: 'pi pi-credit-card', routerLink: '/app/finanzas/cuentas' },
+        { label: 'Recurrentes', icon: 'pi pi-refresh', routerLink: '/app/finanzas/recurrentes' },
+        { label: 'Reportes', icon: 'pi pi-chart-bar', routerLink: '/app/finanzas/reportes' },
+      ],
+    },
+    {
       label: 'Operación',
       items: [
         { label: 'Página 2', icon: 'pi pi-file', routerLink: '/app/pagina-2' },
@@ -40,6 +51,12 @@ export class MenuConfigService {
       items: [
         { label: 'Página 6', icon: 'pi pi-file', routerLink: '/app/pagina-6' },
         { label: 'Página 7', icon: 'pi pi-file', routerLink: '/app/pagina-7' },
+      ],
+    },
+    {
+      label: 'Configuración',
+      items: [
+        { label: 'Mi hogar', icon: 'pi pi-home', routerLink: '/app/configuracion/mi-hogar' },
       ],
     },
   ]);

@@ -1,22 +1,23 @@
 ---
-name: autoescuelas-design-system
+name: app-familiar-design-system
 description: >
   Activar SIEMPRE cuando el agente cree o modifique componentes Angular (.component.ts, .html),
   use clases Tailwind (bg-*, text-*, border-*), trabaje en dashboard, cards, KPIs, layouts o estilos.
   Sistema de tokens, Frosted Cards, bento grid, temas rojo/azul.
+  Contexto: App familiar para inventario, recetas, comidas y gestión del hogar.
   NUNCA usar text-pink-500, bg-blue-50, text-red-700 ni colores Tailwind arbitrarios.
   Usar SIEMPRE var(--color-primary), bg-primary-muted, text-muted, bento-grid, card-tinted.
   Usar junto a angular-component y angular-signals.
 ---
 
-# Skill: autoescuelas-design-system
+# Skill: app-familiar-design-system
 
 ## Cuándo activar esta skill
 
 El agente debe usar esta skill cuando:
 - Cree o modifique cualquier componente Angular de la app
-- Trabaje con layouts de dashboard o páginas
-- Implemente el tema rojo (Escuela A) o azul (Escuela B)
+- Trabaje con layouts de dashboard o páginas (inventario, recetas, comidas, gestión familiar)
+- Implemente el tema rojo (Tema A) o azul (Tema B)
 - Genere cards, KPIs, tablas, formularios o modales
 - Añada animaciones, transiciones o motion
 - Revise si un componente cumple el design system
@@ -225,7 +226,7 @@ export class FeatureCardComponent {
 
     <!-- Elemento ancla — 1 por sección, siempre card-accent -->
     <app-feature-card
-      title="Resumen de la Escuela"
+      title="Resumen del Hogar"
       size="hero"
       [accent]="true"
     >
@@ -237,14 +238,14 @@ export class FeatureCardComponent {
       <app-kpi-card [data]="kpi" />
     }
 
-    <!-- Gráfico — 2x2 card base -->
-    <app-feature-card title="Alumnos Activos" size="2x2">
-      <!-- chart -->
+    <!-- Inventario — 2x2 card base -->
+    <app-feature-card title="Inventario" size="2x2">
+      <!-- chart / lista -->
     </app-feature-card>
 
-    <!-- Agenda — 2x2 card base -->
-    <app-feature-card title="Clases de Hoy" size="2x2">
-      <!-- lista -->
+    <!-- Comidas — 2x2 card base -->
+    <app-feature-card title="Comidas de la Semana" size="2x2">
+      <!-- lista / planificación -->
     </app-feature-card>
 
   </section>
@@ -277,9 +278,9 @@ export class FeatureCardComponent {
 
 ---
 
-## Tema y Escuela
+## Tema y Preferencias
 
-El tema (rojo/azul) se inyecta con `ThemeService`. El selector de escuela activa está en `SchoolSelectorComponent` (topbar/sidebar).
+El tema (rojo/azul) se inyecta con `ThemeService`. El selector de tema está disponible en la topbar/sidebar para personalizar la experiencia.
 
 ---
 

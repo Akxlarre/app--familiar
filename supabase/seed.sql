@@ -1,0 +1,2 @@
+-- Seed data para desarrollo local
+-- Los catálogos (expense_categories, product_categories) se insertan en la migración 20250219000000

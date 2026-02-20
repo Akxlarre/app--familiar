@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
   supabase: {
-    url: 'https://skvekggejikzxhzsjmkz.supabase.co',
-    anonKey: 'sb_publishable_X3ycWO_eQnwRUj89b_v_Xw_gRYVPiqE'
+    url: 'https://frlgxhyacaamngkvsujr.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZybGd4aHlhY2FhbW5na3ZzdWpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NDA4OTEsImV4cCI6MjA4NzExNjg5MX0.0TwHFJNGoFwOxkt0Rq0QwX5LCtuq8udZawU-Kde9ZG4'
   }
 };
