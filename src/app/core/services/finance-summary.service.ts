@@ -2,7 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { TransactionService } from './transaction.service';
 import { BudgetService } from './budget.service';
 import { AccountService } from './account.service';
-import type { FinanceSummary } from '@core/models/finance.model';
+import { getPurposeLabel } from '@core/constants/purpose';
+import type { FinanceSummary, BudgetByPurpose } from '@core/models/finance.model';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +16,8 @@ export class FinanceSummaryService {
   async getSummary(
     householdId: string,
     year: number,
-    month: number
+    month: number,
+    options?: { profileId?: string | null; accountIds?: string[] }
   ): Promise<{ data: FinanceSummary; error: Error | null }> {
     const firstDay = `${year}-${String(month).padStart(2, '0')}-01`;
     const lastDay = new Date(year, month, 0);
@@ -26,9 +28,10 @@ export class FinanceSummaryService {
         householdId,
         fromDate: firstDay,
         toDate,
+        accountIds: options?.accountIds,
       }),
-      this.budgetService.getBudgets(householdId, year, month),
-      this.transactionService.getExpensesByCategoryForMonth(householdId, year, month),
+      this.budgetService.getBudgets(householdId, year, month, options?.profileId),
+      this.transactionService.getExpensesByCategoryForMonth(householdId, year, month, options?.accountIds),
     ]);
 
     if (txRes.error) {
@@ -86,14 +89,15 @@ export class FinanceSummaryService {
   async getSummaryWithComparison(
     householdId: string,
     year: number,
-    month: number
+    month: number,
+    options?: { profileId?: string | null; accountIds?: string[] }
   ): Promise<{ data: FinanceSummary; error: Error | null }> {
-    const res = await this.getSummary(householdId, year, month);
+    const res = await this.getSummary(householdId, year, month, options);
     if (res.error) return res;
 
     const prevMonth = month === 1 ? 12 : month - 1;
     const prevYear = month === 1 ? year - 1 : year;
-    const prevRes = await this.getSummary(householdId, prevYear, prevMonth);
+    const prevRes = await this.getSummary(householdId, prevYear, prevMonth, options);
     if (prevRes.error) return res;
 
     const incomeVsLastMonth =
@@ -126,5 +130,74 @@ export class FinanceSummaryService {
       totalSpent: 0,
       topCategories: [],
     };
+  }
+
+  /**
+   * Presupuesto por propósito: balance y gastos sincronizados con totales de cuentas.
+   * Las personales reciben ingresos; las demás se cargan por transferencias.
+   */
+  async getBudgetByPurpose(
+    householdId: string,
+    year: number,
+    month: number
+  ): Promise<{ data: BudgetByPurpose[]; error: Error | null }> {
+    const firstDay = `${year}-${String(month).padStart(2, '0')}-01`;
+    const lastDay = new Date(year, month, 0);
+    const toDate = `${lastDay.getFullYear()}-${String(lastDay.getMonth() + 1).padStart(2, '0')}-${String(lastDay.getDate()).padStart(2, '0')}`;
+
+    const [accountsRes, balancesRes, txRes] = await Promise.all([
+      this.accountService.getAccounts(householdId, false),
+      this.accountService.getBalancesForHousehold(householdId),
+      this.transactionService.getTransactions({
+        householdId,
+        fromDate: firstDay,
+        toDate,
+      }),
+    ]);
+
+    const accounts = accountsRes.data ?? [];
+    const balancesMap = new Map((balancesRes.data ?? []).map((b) => [b.accountId, b.balance]));
+    const transactions = txRes.data ?? [];
+
+    const purposeToAccountIds = new Map<string, string[]>();
+    for (const a of accounts) {
+      const p = a.purpose?.trim() ?? '';
+      if (!purposeToAccountIds.has(p)) purposeToAccountIds.set(p, []);
+      purposeToAccountIds.get(p)!.push(a.id);
+    }
+
+    const purposeOrder = ['personal', 'alimentacion', 'deudas', 'recurrentes', 'emergencias', 'suscripciones', 'hogar', 'otros', ''];
+
+    const results: BudgetByPurpose[] = [];
+    for (const [purpose, accountIds] of purposeToAccountIds) {
+      const balance = accountIds.reduce((s, id) => s + (balancesMap.get(id) ?? 0), 0);
+      let spent = 0;
+      let transfersIn = 0;
+      for (const t of transactions) {
+        if (t.type === 'expense' && accountIds.includes(t.account_id)) spent += t.amount;
+        if (t.type === 'transfer' && t.transfer_to_account_id && accountIds.includes(t.transfer_to_account_id)) {
+          transfersIn += t.amount;
+        }
+      }
+      results.push({
+        purpose,
+        purposeLabel: getPurposeLabel(purpose),
+        balance,
+        spent,
+        transfersIn,
+        accountIds,
+      });
+    }
+
+    results.sort((a, b) => {
+      const ai = purposeOrder.indexOf(a.purpose);
+      const bi = purposeOrder.indexOf(b.purpose);
+      if (ai >= 0 && bi >= 0) return ai - bi;
+      if (ai >= 0) return -1;
+      if (bi >= 0) return 1;
+      return a.purpose.localeCompare(b.purpose);
+    });
+
+    return { data: results, error: null };
   }
 }

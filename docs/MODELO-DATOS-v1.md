@@ -201,12 +201,43 @@ supabase db reset
 supabase db push
 ```
 
-Para proyecto remoto sin CLI: ejecutar el SQL en el **SQL Editor** del dashboard de Supabase.
+Para proyecto remoto sin CLI: ejecutar el SQL en el **SQL Editor** del dashboard de Supabase. **Guía paso a paso**: `docs/MIGRACION-SUPABASE-DASHBOARD.md`.
 
 ---
 
-## 9. Historial de cambios del modelo
+## 9. Sistema Financiero Inteligente (extensiones finanzas)
+
+Estas tablas y columnas se añadieron con las migraciones 20250221150000–20250221210000.
+
+### Tablas nuevas
+
+| Tabla | Descripción |
+|-------|-------------|
+| `email_integrations` | Tokens OAuth por perfil (Gmail): access_token, refresh_token, token_expiry, is_active, last_sync_at. RLS: solo el propio perfil. |
+| `bank_email_parsers` | Parsers por hogar: bank_name, sender_pattern, subject_pattern, body_rules (JSONB), email_type (purchase_alert, statement, payment_confirmation, installment_notice). |
+| `email_transactions_log` | Log de emails procesados: email_id, profile_id, household_id, bank_parser_id, extracted_data (JSONB), confidence_score, status (auto_created, pending_review, rejected, failed), transaction_id. |
+| `credit_card_details` | Por cuenta tipo credit_card: account_id (UNIQUE), credit_limit, billing_cycle_day, payment_due_day, current_statement_balance, minimum_payment. |
+| `installment_purchases` | Compras en cuotas: household_id, account_id (TC), category_id, description, total_amount, installment_count, installments_paid, installment_amount, interest_rate, purchase_date, first_installment_date, is_active. |
+
+### Columnas nuevas
+
+| Tabla | Columnas |
+|-------|----------|
+| `accounts` | owner_profile_id (FK profiles), purpose (TEXT), bank_name (TEXT). Tipo permitido: se añade `digital_wallet`. |
+| `budgets` | profile_id (FK profiles, NULL = presupuesto hogar). Índices únicos parciales: uno para profile_id IS NULL, otro para profile_id IS NOT NULL. |
+
+### RLS
+
+- `email_integrations`: solo el perfil dueño (profile_id = auth.uid()).
+- `bank_email_parsers`, `email_transactions_log`, `installment_purchases`: `belongs_to_household(household_id)`.
+- `credit_card_details`: acceso si la cuenta asociada pertenece al hogar del usuario.
+
+---
+
+## 10. Historial de cambios del modelo
 
 | Fecha | Cambio | Versión |
 |-------|--------|---------|
 | 2025-02-19 | Creación inicial del modelo v1. Tablas: households, profiles, invites, gastos, boletas, inventario, comidas, ejercicio, notas. RLS y Realtime configurados. | v1 |
+| 2025-02-21 | Mejoras módulo Finanzas: savings_goals (metas de ahorro), tags, transaction_tags (etiquetas), transaction_splits (división de gastos). Migración 20250221100000_finanzas_mejoras_inmediatas.sql | v1 |
+| 2025-02-21 | Sistema Financiero Inteligente: cuentas enriquecidas (accounts), email_integrations, bank_email_parsers, email_transactions_log, credit_card_details, installment_purchases, profile_id en budgets. Migraciones 20250221150000–20250221210000. | v1 |

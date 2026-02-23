@@ -22,6 +22,20 @@
     --color-error: var(--state-error);
     --color-info: var(--state-info);
 
+    /* State color aliases (bg-state-success, text-state-error, etc.) */
+    --color-state-success: var(--state-success);
+    --color-state-success-bg: var(--state-success-bg);
+    --color-state-success-border: var(--state-success-border);
+    --color-state-warning: var(--state-warning);
+    --color-state-warning-bg: var(--state-warning-bg);
+    --color-state-warning-border: var(--state-warning-border);
+    --color-state-error: var(--state-error);
+    --color-state-error-bg: var(--state-error-bg);
+    --color-state-error-border: var(--state-error-border);
+    --color-state-info: var(--state-info);
+    --color-state-info-bg: var(--state-info-bg);
+    --color-state-info-border: var(--state-info-border);
+
     /* Text/Muted - for metadata, secondary content */
     --color-muted: var(--text-muted);
     --color-secondary: var(--text-secondary);

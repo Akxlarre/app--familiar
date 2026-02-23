@@ -11,6 +11,11 @@ export interface CreateAccountInput {
   icon?: string | null;
   color?: string | null;
   sortOrder?: number;
+  ownerProfileId?: string | null;
+  purpose?: string | null;
+  bankName?: string | null;
+  cardLast4?: string | null;
+  linkedEmail?: string | null;
 }
 
 export interface UpdateAccountInput {
@@ -21,6 +26,11 @@ export interface UpdateAccountInput {
   color?: string | null;
   is_active?: boolean;
   sort_order?: number;
+  owner_profile_id?: string | null;
+  purpose?: string | null;
+  bank_name?: string | null;
+  card_last4?: string | null;
+  linked_email?: string | null;
 }
 
 @Injectable({
@@ -67,6 +77,11 @@ export class AccountService {
         icon: input.icon ?? null,
         color: input.color ?? null,
         sort_order: input.sortOrder ?? 0,
+        owner_profile_id: input.ownerProfileId ?? null,
+        purpose: input.purpose ?? null,
+        bank_name: input.bankName ?? null,
+        card_last4: input.cardLast4?.replace(/\D/g, '').slice(0, 4) || null,
+        linked_email: input.linkedEmail?.trim() || null,
         updated_at: new Date().toISOString(),
       })
       .select()
@@ -85,6 +100,11 @@ export class AccountService {
     if (input.color !== undefined) payload['color'] = input.color;
     if (input.is_active !== undefined) payload['is_active'] = input.is_active;
     if (input.sort_order !== undefined) payload['sort_order'] = input.sort_order;
+    if (input.owner_profile_id !== undefined) payload['owner_profile_id'] = input.owner_profile_id;
+    if (input.purpose !== undefined) payload['purpose'] = input.purpose;
+    if (input.bank_name !== undefined) payload['bank_name'] = input.bank_name;
+    if (input.card_last4 !== undefined) payload['card_last4'] = input.card_last4?.replace(/\D/g, '').slice(0, 4) || null;
+    if (input.linked_email !== undefined) payload['linked_email'] = input.linked_email?.trim() || null;
 
     const { data, error } = await this.supabase.client
       .from('accounts')
@@ -174,6 +194,11 @@ export class AccountService {
       color: (row['color'] as string) ?? null,
       is_active: (row['is_active'] as boolean) ?? true,
       sort_order: Number(row['sort_order'] ?? 0),
+      owner_profile_id: (row['owner_profile_id'] as string) ?? null,
+      purpose: (row['purpose'] as string) ?? null,
+      bank_name: (row['bank_name'] as string) ?? null,
+      card_last4: (row['card_last4'] as string) ?? null,
+      linked_email: (row['linked_email'] as string) ?? null,
       created_at: row['created_at'] as string,
       updated_at: row['updated_at'] as string,
     };

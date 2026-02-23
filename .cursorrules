@@ -1,0 +1,118 @@
+# Constitución del Proyecto — Sistema de Agente
+
+Este proyecto usa un sistema de reglas y documentación viva. El agente debe leer este documento como marco antes de cualquier acción que involucre código.
+
+---
+
+## Identidad del Proyecto
+
+FamilyApp es un **centro de control del hogar** para una pareja tech-savvy que comparte la gestión 50/50. Frase guía: *"Es como el centro de control de mi casa — todo lo que necesitas saber del hogar en un lugar."* No es genérica, no es empresarial, no es social, no es abrumadora.
+
+---
+
+## Cinco Principios del Sistema
+
+1. **Escribir > Recordar** — Toda decisión técnica, patrón o convención se documenta. Si no está escrito, no existe.
+2. **Descubrir antes de crear** — SIEMPRE buscar si algo ya existe (índices) antes de crear algo nuevo.
+3. **Documentar al crear** — Crear un componente/servicio/directiva sin documentarlo es como no haberlo creado.
+4. **Reglas en capas** — Algunas reglas son universales (always-on), otras se activan solo con archivos relevantes (glob).
+5. **El proyecto se autodescribe** — Entender el proyecto leyendo reglas e índices, sin explorar código a ciegas.
+
+---
+
+## Mapa de Documentación
+
+| Documento | Contiene |
+|-----------|----------|
+| `docs/PRODUCT-VISION.md` | Visión, principios, tono, anti-goals, definición de éxito |
+| `docs/Requerimientos_v1.md` | Módulos, features, stack, plan de fases, historial de cambios |
+| `docs/MODELO-DATOS-v1.md` | Tablas, columnas, relaciones, RLS, Realtime |
+| `docs/BRAND_GUIDELINES.md` | Identidad visual, tipografía, colores, restricciones |
+| `docs/ANIMATIONS.md` | API del servicio de animaciones, cuándo usar cada método |
+| `docs/SKELETON-ARCHITECTURE.md` | Convenciones de skeletons y loading states |
+| `docs/PAGE-TRANSITIONS.md` | Transiciones entre rutas |
+| `docs/EDGE-FUNCTIONS-SUPABASE.md` | Guía de despliegue, secretos y cron de Edge Functions |
+| `docs/AGENT-SYSTEM-BLUEPRINT.md` | Guía portable de replicación del sistema (referencia) |
+
+---
+
+## Mapa de Reglas (.cursor/rules/*.mdc)
+
+### Visión y requerimientos
+| Regla | Tipo | Propósito |
+|-------|------|-----------|
+| `product-vision.mdc` | always-on | Brújula del producto, tono, principios |
+| `requirements-and-documentation.mdc` | always-on | Fuentes de verdad, workflow, checklist de cierre |
+
+### Design system y UI
+| Regla | Tipo | Propósito |
+|-------|------|-----------|
+| `design-system-enforcement.mdc` | always-on | Clases prohibidas vs correctas, semántica de colores |
+| `design-system-components.mdc` | glob: *.component | Tokens, cards, KPIs, bento |
+| `bento-grid-patterns.mdc` | glob: *.component, *.scss | Grid 12 columnas, sizing, composición |
+| `bento-layout.mdc` | glob: *.component | Directiva appBentoGridLayout |
+| `primeng-priority.mdc` | glob: *.component, *.html | Jerarquía: shared → PrimeNG → custom |
+
+### Motion e interacción
+| Regla | Tipo | Propósito |
+|-------|------|-----------|
+| `motion.mdc` | glob: *.component, *.ts | GSAP obligatorio, nunca @angular/animations |
+| `interactive-feedback.mdc` | glob: *.component | appPressFeedback, addCardHover |
+
+### Data model y migraciones
+| Regla | Tipo | Propósito |
+|-------|------|-----------|
+| `data-model.mdc` | glob: *.service, *.sql | Convenciones SQL, servicios Supabase |
+| `supabase-migrations.mdc` | glob: migrations/*.sql | Naming, workflow, REGISTRY, seguridad |
+| `edge-function-discovery.mdc` | glob: supabase/functions/** | Buscar en FUNCTIONS.md antes de crear |
+| `edge-function-documentation.mdc` | always-on | FUNCTIONS.md + header al crear Edge Function |
+
+### Discovery y documentación
+| Regla | Tipo | Propósito |
+|-------|------|-----------|
+| `component-discovery.mdc` | glob: *.component | Buscar en COMPONENTS.md antes de crear |
+| `component-documentation.mdc` | always-on | README + COMPONENTS.md al crear componente |
+| `service-discovery.mdc` | glob: *.service | Buscar en SERVICES.md antes de crear |
+| `services-documentation.mdc` | always-on | README + SERVICES.md al crear servicio |
+| `directive-discovery.mdc` | glob: *.directive | Buscar en DIRECTIVES.md antes de crear |
+| `directives-documentation.mdc` | always-on | README + DIRECTIVES.md al crear directiva |
+| `skeleton-requirement.mdc` | glob: shared/components/** | Cuándo crear skeletons, convenciones |
+
+### Verificación de cierre
+| Regla | Tipo | Propósito |
+|-------|------|-----------|
+| `documentation-impact.mdc` | always-on | Revisar y actualizar docs afectados tras cualquier cambio |
+
+### Sistema y sincronización
+| Regla | Tipo | Propósito |
+|-------|------|-----------|
+| `sync-agents.mdc` | always-on | Mantener .cursor ↔ .agent ↔ .agents sincronizados |
+| `agent-system.mdc` | always-on | Refuerzo de este workflow |
+
+---
+
+## Mapa de Índices
+
+| Índice | Ruta | Qué lista |
+|--------|------|-----------|
+| COMPONENTS.md | `src/app/shared/components/COMPONENTS.md` | Componentes compartidos + skeletons |
+| SERVICES.md | `src/app/core/services/SERVICES.md` | Servicios core |
+| DIRECTIVES.md | `src/app/core/directives/DIRECTIVES.md` | Directivas core |
+| REGISTRY.md | `supabase/migrations/REGISTRY.md` | Migraciones SQL por dominio |
+| FUNCTIONS.md | `supabase/functions/FUNCTIONS.md` | Edge Functions de Supabase |
+
+---
+
+## Workflow Obligatorio
+
+1. **Descubrir** — Consultar el índice correspondiente (COMPONENTS.md, SERVICES.md, DIRECTIVES.md). ¿Ya existe algo que cubra el caso?
+2. **Consultar** — Leer la documentación de referencia (docs/) y la regla del dominio (.cursor/rules/). Respetar visión, requerimientos y modelo de datos.
+3. **Implementar** — Seguir las reglas del dominio (design system, motion, migraciones, etc.).
+4. **Documentar** — Actualizar el índice y crear/actualizar README del artefacto. Si aplica: historial en Requerimientos_v1.md, REGISTRY, MODELO-DATOS.
+5. **Verificar impacto** — Recorrer el mapa de documentación y evaluar si algún otro documento necesita actualizarse. Ver `documentation-impact.mdc`.
+
+---
+
+## Skill Disponible
+
+- **Design system**: `.cursor/skills/app-familiar-design-system/` — Activar al crear o modificar componentes Angular, layouts, estilos. Contiene tokens, Frosted Cards, bento grid, GSAP, plantillas de componentes.

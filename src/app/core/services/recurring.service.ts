@@ -153,6 +153,10 @@ export class RecurringService {
       sort_order: Number(acc['sort_order'] ?? 0),
       created_at: acc['created_at'] as string,
       updated_at: acc['updated_at'] as string,
+      owner_profile_id: (acc['owner_profile_id'] as string) ?? null,
+      purpose: (acc['purpose'] as string) ?? null,
+      bank_name: (acc['bank_name'] as string) ?? null,
+      card_last4: (acc['card_last4'] as string) ?? null,
     };
   }
 

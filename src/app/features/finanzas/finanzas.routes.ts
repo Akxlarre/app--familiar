@@ -23,10 +23,24 @@ export const FINANZAS_ROUTES: Routes = [
       ),
   },
   {
+    path: 'mi-cuenta',
+    loadComponent: () =>
+      import('./mi-cuenta/mi-cuenta.component').then(
+        (m) => m.MiCuentaComponent
+      ),
+  },
+  {
     path: 'cuentas',
     loadComponent: () =>
       import('./cuentas/cuentas.component').then(
         (m) => m.CuentasComponent
+      ),
+  },
+  {
+    path: 'deudas',
+    loadComponent: () =>
+      import('./deudas/deudas.component').then(
+        (m) => m.DeudasComponent
       ),
   },
   {
@@ -41,6 +55,13 @@ export const FINANZAS_ROUTES: Routes = [
     loadComponent: () =>
       import('./reportes/reportes.component').then(
         (m) => m.ReportesComponent
+      ),
+  },
+  {
+    path: 'metas-ahorro',
+    loadComponent: () =>
+      import('./metas-ahorro/metas-ahorro.component').then(
+        (m) => m.MetasAhorroComponent
       ),
   },
 ];

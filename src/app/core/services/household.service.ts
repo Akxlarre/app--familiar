@@ -112,22 +112,18 @@ export class HouseholdService {
 
   /**
    * Une al usuario actual a un hogar usando el código de invitación.
+   * Usa RPC para evitar RLS: el usuario no puede SELECT households si aún no es miembro.
    */
   async joinWithCode(code: string): Promise<{ error: Error | null }> {
     const normalized = code.trim().toUpperCase();
     if (!normalized) return { error: new Error('El código es requerido') };
 
-    const { data: household, error: fetchError } = await this.supabase.client
-      .from('households')
-      .select('id')
-      .eq('invite_code', normalized)
-      .maybeSingle();
+    const { error } = await this.supabase.client.rpc('join_household_by_code', {
+      p_code: normalized,
+    });
 
-    if (fetchError) return { error: fetchError as unknown as Error };
-    if (!household) return { error: new Error('Código no válido') };
-
-    const updateError = await this.updateProfileHousehold((household as { id: string }).id, 'member');
-    return { error: updateError };
+    if (error) return { error: error as unknown as Error };
+    return { error: null };
   }
 
   private async updateProfileHousehold(householdId: string, role: 'admin' | 'member'): Promise<Error | null> {

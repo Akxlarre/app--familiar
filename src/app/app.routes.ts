@@ -80,6 +80,13 @@ export const routes: Routes = [
                 (m) => m.MiHogarComponent
               ),
           },
+          {
+            path: 'email',
+            loadComponent: () =>
+              import('./features/configuracion/email/email-config.component').then(
+                (m) => m.EmailConfigComponent
+              ),
+          },
         ],
       },
     ],

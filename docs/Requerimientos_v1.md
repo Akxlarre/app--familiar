@@ -154,6 +154,8 @@ Regla: al crear tablas, modificar flujos, añadir features o desviarse de los re
 | 2025-02-19 | Modelo de datos v1: migración SQL y docs/MODELO-DATOS-v1.md. Tablas: households, profiles, invites, gastos, boletas, inventario, comidas, ejercicio, notas. RLS y Realtime. | Modelo de datos |
 | 2025-02-19 | Integración Auth con Supabase: AuthService con login/logout y onAuthStateChange, LoginComponent con login/registro/recuperación, AuthGuard para rutas /app, branding App Familiar. | Auth |
 | 2025-02-19 | Flujo hogar: crear hogar / unirse con código. Columna invite_code en households. Feature setup-hogar, HouseholdService, HouseholdGuard, AuthService.refreshProfile(). | Hogar / Auth |
+| 2025-02-21 | Mejoras inmediatas módulo Finanzas: exportación CSV/Excel/PDF, metas de ahorro, etiquetas/tags, búsqueda avanzada (rangos monto, múltiples categorías), división de gastos entre miembros, notificaciones in-app (presupuesto superado, recurrentes próximos). | Finanzas |
+| 2025-02-21 | Sistema Financiero Inteligente: (1) Cuentas enriquecidas: owner_profile_id, purpose, bank_name, tipo digital_wallet; (2) Tarjetas de crédito (credit_card_details, límite/ciclo/vencimiento) y compras en cuotas (installment_purchases), vista Deudas, flujo pago TC; (3) Automatización Gmail: OAuth (email_integrations), parsers configurables (bank_email_parsers), log de sugeridas (email_transactions_log), bandeja de transacciones sugeridas y badge en menú; (4) Scope personal vs hogar: profile_id en budgets, toggle Hogar/Personal en dashboard finanzas y presupuesto. Rutas: /app/finanzas/deudas, /app/configuracion/email. | Finanzas |
 
 
 FamilyApp — Documento de Requerimientos v1.0 — Este documento es un insumo vivo, actualizar a medida que evolucionen los requerimientos.

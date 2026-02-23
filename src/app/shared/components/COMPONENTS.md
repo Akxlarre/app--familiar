@@ -45,6 +45,7 @@
 | Componente | Propósito | Doc |
 |------------|-----------|-----|
 | `app-file-upload` | Subida de archivos (wrapper PrimeNG, design system) | [README.md](file-upload/README.md) |
+| `app-color-picker` | Selector de colores HEX (wrapper PrimeNG ColorPicker) | [README.md](color-picker/README.md) |
 
 ## Layout
 

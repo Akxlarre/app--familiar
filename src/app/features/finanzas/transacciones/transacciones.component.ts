@@ -16,6 +16,7 @@ import { DialogModule } from 'primeng/dialog';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { AuthService } from '@core/services/auth.service';
 import { TransactionService } from '@core/services/transaction.service';
 import { AccountService } from '@core/services/account.service';
@@ -42,6 +43,7 @@ import type { HouseholdMember } from '@core/services/household.service';
     SelectModule,
     DatePickerModule,
     InputTextModule,
+    InputNumberModule,
     PressFeedbackDirective,
     EmptyStateComponent,
     TransaccionFormComponent,
@@ -194,15 +196,6 @@ import type { HouseholdMember } from '@core/services/household.service';
         }
       }
 
-      <!-- FAB -->
-      <button
-        pButton
-        icon="pi pi-plus"
-        class="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg z-10"
-        (click)="openForm(null)"
-        appPressFeedback="press"
-      ></button>
-
       <p-dialog
         [(visible)]="formVisible"
         [header]="editingTransaction() ? 'Editar transacción' : 'Nueva transacción'"
@@ -234,6 +227,7 @@ import type { HouseholdMember } from '@core/services/household.service';
           ></button>
         </ng-template>
       </p-dialog>
+
     </div>
   `,
 })

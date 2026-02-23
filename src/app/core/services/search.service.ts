@@ -55,7 +55,7 @@ export class SearchService {
       { id: 'p4', type: 'student', title: 'Página 4', subtitle: 'Alumnos', routerLink: '/app/pagina-4' },
       { id: 'p5', type: 'student', title: 'Página 5', subtitle: 'Alumnos', routerLink: '/app/pagina-5' },
       { id: 'p6', type: 'certificate', title: 'Página 6', subtitle: 'Administración', routerLink: '/app/pagina-6' },
-      { id: 'p7', type: 'certificate', title: 'Página 7', subtitle: 'Administración', routerLink: '/app/pagina-7' },
+      { id: 'p7', type: 'certificate', title: 'Correos procesados', subtitle: 'Administración', routerLink: '/app/pagina-7' },
     ];
 
     return all.filter(

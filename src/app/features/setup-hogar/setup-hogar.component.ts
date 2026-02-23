@@ -29,7 +29,17 @@ import { PressFeedbackDirective } from '@core/directives/press-feedback.directiv
     PressFeedbackDirective,
   ],
   template: `
-    <div class="setup-page min-h-[80vh] flex flex-col items-center justify-center p-4 font-body">
+    <div class="setup-page min-h-[80vh] flex flex-col items-center justify-center p-4 font-body relative">
+      <button
+        pButton
+        icon="pi pi-sign-out"
+        label="Cerrar sesión"
+        severity="secondary"
+        [text]="true"
+        class="!absolute top-4 right-4"
+        (click)="logout()"
+        appPressFeedback="press"
+      ></button>
       <div #container class="setup-container w-full max-w-lg flex flex-col gap-8">
         <header class="text-center">
           <h1 class="text-2xl font-bold font-display text-primary">Configurar hogar</h1>
@@ -208,5 +218,9 @@ export class SetupHogarComponent implements AfterViewInit {
 
   goToDashboard(): void {
     this.router.navigate(['/app/dashboard']);
+  }
+
+  logout(): void {
+    this.auth.logout();
   }
 }

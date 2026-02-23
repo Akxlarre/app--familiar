@@ -12,10 +12,12 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
+import { AccountService } from '@core/services/account.service';
 import { AuthService } from '@core/services/auth.service';
 import { FinanceSummaryService } from '@core/services/finance-summary.service';
 import { TransactionService } from '@core/services/transaction.service';
 import { RecurringService } from '@core/services/recurring.service';
+import { FinanceNotificationsService } from '@core/services/finance-notifications.service';
 import { GsapAnimationsService } from '@core/services/gsap-animations.service';
 import { KpiCardComponent } from '@shared/components/kpi-card/kpi-card.component';
 import { CategoryBreakdownCardComponent } from '@shared/components/category-breakdown-card/category-breakdown-card.component';
@@ -36,9 +38,31 @@ import type { Transaction, RecurringTransaction } from '@core/models/finance.mod
   ],
   template: `
     <div #container class="flex flex-col gap-6 font-body">
-      <div>
-        <h1 class="text-3xl font-bold font-display text-primary">Resumen Financiero</h1>
-        <p class="text-secondary text-lg">Vista general del mes</p>
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold font-display text-primary">Resumen Financiero</h1>
+          <p class="text-secondary text-lg">Vista general del mes</p>
+        </div>
+        <div class="flex rounded-lg border border-default bg-subtle p-1">
+          <button
+            type="button"
+            class="px-3 py-1.5 rounded-md text-sm font-medium transition"
+            [class.bg-surface]="scope() === 'household'"
+            [class.text-primary]="scope() === 'household'"
+            [class.shadow-sm]="scope() === 'household'"
+            [class.text-secondary]="scope() !== 'household'"
+            (click)="setScope('household')"
+          >Hogar</button>
+          <button
+            type="button"
+            class="px-3 py-1.5 rounded-md text-sm font-medium transition"
+            [class.bg-surface]="scope() === 'personal'"
+            [class.text-primary]="scope() === 'personal'"
+            [class.shadow-sm]="scope() === 'personal'"
+            [class.text-secondary]="scope() !== 'personal'"
+            (click)="setScope('personal')"
+          >Personal</button>
+        </div>
       </div>
 
       @if (loading()) {
@@ -151,9 +175,11 @@ import type { Transaction, RecurringTransaction } from '@core/models/finance.mod
 })
 export class FinanzasDashboardComponent implements OnInit, AfterViewInit {
   private auth = inject(AuthService);
+  private accountService = inject(AccountService);
   private financeSummary = inject(FinanceSummaryService);
   private transactionService = inject(TransactionService);
   private recurringService = inject(RecurringService);
+  private financeNotifications = inject(FinanceNotificationsService);
   private gsap = inject(GsapAnimationsService);
 
   containerRef = viewChild<ElementRef<HTMLElement>>('container');
@@ -180,6 +206,7 @@ export class FinanzasDashboardComponent implements OnInit, AfterViewInit {
     budgetUsedPercent: 0,
     topCategories: [],
   });
+  scope = signal<'household' | 'personal'>('household');
   lastTransactions = signal<Transaction[]>([]);
   upcomingRecurring = signal<RecurringTransaction[]>([]);
 
@@ -240,22 +267,40 @@ export class FinanzasDashboardComponent implements OnInit, AfterViewInit {
     if (el) this.gsap.animatePageEnter(el);
   }
 
+  setScope(value: 'household' | 'personal'): void {
+    this.scope.set(value);
+    void this.loadData();
+  }
+
   private async loadData(): Promise<void> {
     const householdId = this.auth.currentUser()?.householdId;
+    const profileId = this.auth.currentUser()?.id;
     if (!householdId) {
       this.loading.set(false);
       return;
     }
+    const isPersonal = this.scope() === 'personal';
+    let accountIds: string[] | undefined;
+    if (isPersonal && profileId) {
+      const { data: accounts } = await this.accountService.getAccounts(householdId, false);
+      accountIds = accounts.filter((a) => a.owner_profile_id === profileId).map((a) => a.id);
+    }
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth() + 1;
+    const fromDate = `${year}-${String(month).padStart(2, '0')}-01`;
+    const toDate = now.toISOString().slice(0, 10);
 
     const [summaryRes, txRes, recRes] = await Promise.all([
-      this.financeSummary.getSummaryWithComparison(householdId, year, month),
+      this.financeSummary.getSummaryWithComparison(householdId, year, month, {
+        profileId: isPersonal ? profileId ?? null : null,
+        accountIds,
+      }),
       this.transactionService.getTransactions({
         householdId,
-        fromDate: `${year}-${String(month).padStart(2, '0')}-01`,
-        toDate: now.toISOString().slice(0, 10),
+        fromDate,
+        toDate,
+        accountIds,
       }),
       this.recurringService.getUpcoming(householdId, 30),
     ]);
@@ -264,5 +309,7 @@ export class FinanzasDashboardComponent implements OnInit, AfterViewInit {
     if (summaryRes.data) this.summary.set(summaryRes.data);
     if (txRes.data.length) this.lastTransactions.set(txRes.data.slice(0, 5));
     if (recRes.data.length) this.upcomingRecurring.set(recRes.data.slice(0, 5));
+
+    this.financeNotifications.checkAndNotify(householdId);
   }
 }

@@ -1,4 +1,4 @@
-# Arquitectura de Skeletons — Auto Escuelas
+# Arquitectura de Skeletons — App Familiar
 
 ## Estructura de carpetas
 

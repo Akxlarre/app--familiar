@@ -20,6 +20,28 @@
 | `SupabaseService` | Cliente Supabase (auth, DB) | [README](supabase.service.README.md) |
 | `ThemeService` | Tema dual (rojo/azul) por escuela | [README](theme.service.README.md) |
 
+### Finanzas (módulo financiero)
+
+| Servicio | Propósito |
+|----------|-----------|
+| `AccountService` | CRUD cuentas (incl. owner_profile_id, purpose, bank_name, tipo digital_wallet) |
+| `BudgetService` | Presupuestos por hogar/mes; scope personal/hogar (profile_id) |
+| `TransactionService` | Transacciones, filtros (accountIds para scope personal), gastos por categoría |
+| `FinanceSummaryService` | Resumen del mes (ingresos, gastos, presupuesto); opciones profileId/accountIds |
+| `CategoryService` | Categorías de gasto/ingreso |
+| `RecurringService` | Transacciones recurrentes |
+| `CreditCardDetailsService` | Detalle TC: límite, ciclo, vencimiento, saldo; applyPayment |
+| `InstallmentPurchaseService` | Compras en cuotas: activas, crear, registrar pago |
+| `EmailIntegrationService` | Integración Gmail OAuth (conectar, estado, tokens) |
+| `BankEmailParserService` | Parsers de email bancario por hogar (CRUD) |
+| `EmailTransactionLogService` | Log de sugeridas desde email; pendingCount, aprobar, rechazar |
+| `FinanceNotificationsService` | Alertas presupuesto y recurrentes |
+| `SavingsGoalService` | Metas de ahorro |
+| `TagService` | Etiquetas de transacciones |
+| `TransactionSplitService` | División de gastos |
+| `ReceiptService` | Boletas y ítems |
+| `ExportService` | Exportación CSV/Excel/PDF |
+
 ---
 
 ## Cuándo usar cada uno
@@ -39,3 +61,6 @@
 | Abrir panel de búsqueda programáticamente | `SearchPanelService` |
 | Llamadas a Supabase (auth, DB) | `SupabaseService` |
 | Tema visual (rojo/azul) | `ThemeService` |
+| Cuentas, presupuestos, transacciones, resumen financiero | `AccountService`, `BudgetService`, `TransactionService`, `FinanceSummaryService` |
+| Tarjetas de crédito, cuotas, pago de TC | `CreditCardDetailsService`, `InstallmentPurchaseService` |
+| Integración Gmail, parsers bancarios, transacciones sugeridas desde email | `EmailIntegrationService`, `BankEmailParserService`, `EmailTransactionLogService` |

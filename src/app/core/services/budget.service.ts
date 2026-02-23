@@ -11,9 +11,10 @@ export class BudgetService {
   async getBudgets(
     householdId: string,
     year: number,
-    month: number
+    month: number,
+    profileId?: string | null
   ): Promise<{ data: Budget[]; error: Error | null }> {
-    const { data, error } = await this.supabase.client
+    let query = this.supabase.client
       .from('budgets')
       .select(`
         id,
@@ -23,6 +24,7 @@ export class BudgetService {
         month,
         amount,
         alert_threshold,
+        profile_id,
         created_at,
         updated_at,
         categories (id, name, icon, color, type, parent_id)
@@ -30,6 +32,14 @@ export class BudgetService {
       .eq('household_id', householdId)
       .eq('year', year)
       .eq('month', month);
+
+    if (profileId === undefined || profileId === null) {
+      query = query.is('profile_id', null);
+    } else {
+      query = query.eq('profile_id', profileId);
+    }
+
+    const { data, error } = await query;
 
     if (error) return { data: [], error: error as unknown as Error };
     const rows = (data ?? []).map((row: Record<string, unknown>) => {
@@ -42,6 +52,7 @@ export class BudgetService {
         month: row['month'],
         amount: Number(row['amount']),
         alert_threshold: Number(row['alert_threshold'] ?? 80),
+        profile_id: (row['profile_id'] as string) ?? null,
         created_at: row['created_at'],
         updated_at: row['updated_at'],
         category: cat
@@ -69,16 +80,22 @@ export class BudgetService {
     year: number,
     month: number,
     amount: number,
-    alertThreshold = 80
+    alertThreshold = 80,
+    profileId?: string | null
   ): Promise<{ data?: Budget; error: Error | null }> {
-    const { data: existing } = await this.supabase.client
+    let existingQuery = this.supabase.client
       .from('budgets')
       .select('id')
       .eq('household_id', householdId)
       .eq('category_id', categoryId)
       .eq('year', year)
-      .eq('month', month)
-      .maybeSingle();
+      .eq('month', month);
+    if (profileId == null) {
+      existingQuery = existingQuery.is('profile_id', null);
+    } else {
+      existingQuery = existingQuery.eq('profile_id', profileId);
+    }
+    const { data: existing } = await existingQuery.maybeSingle();
 
     const payload = {
       household_id: householdId,
@@ -87,6 +104,7 @@ export class BudgetService {
       month,
       amount,
       alert_threshold: alertThreshold,
+      profile_id: profileId ?? null,
       updated_at: new Date().toISOString(),
     };
 

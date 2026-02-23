@@ -1,5 +1,6 @@
-import { Injectable, computed } from '@angular/core';
+import { Injectable, computed, inject } from '@angular/core';
 import { MenuItem } from 'primeng/api';
+import { EmailTransactionLogService } from './email-transaction-log.service';
 
 /**
  * MenuConfigService - Configuración del menú lateral
@@ -13,7 +14,11 @@ import { MenuItem } from 'primeng/api';
   providedIn: 'root',
 })
 export class MenuConfigService {
-  readonly menuItems = computed<MenuItem[]>(() => [
+  private emailLogService = inject(EmailTransactionLogService);
+
+  readonly menuItems = computed<MenuItem[]>(() => {
+    const pendingCount = this.emailLogService.pendingCount();
+    return [
     {
       label: 'Inicio',
       items: [
@@ -25,10 +30,18 @@ export class MenuConfigService {
       label: 'Finanzas',
       items: [
         { label: 'Resumen', icon: 'pi pi-chart-pie', routerLink: '/app/finanzas' },
-        { label: 'Transacciones', icon: 'pi pi-list', routerLink: '/app/finanzas/transacciones' },
+        {
+          label: 'Transacciones',
+          icon: 'pi pi-list',
+          routerLink: '/app/finanzas/transacciones',
+          badge: pendingCount > 0 ? String(pendingCount) : undefined,
+        },
         { label: 'Presupuesto', icon: 'pi pi-wallet', routerLink: '/app/finanzas/presupuesto' },
+        { label: 'Mi cuenta', icon: 'pi pi-user', routerLink: '/app/finanzas/mi-cuenta' },
         { label: 'Cuentas', icon: 'pi pi-credit-card', routerLink: '/app/finanzas/cuentas' },
+        { label: 'Deudas', icon: 'pi pi-calendar-minus', routerLink: '/app/finanzas/deudas' },
         { label: 'Recurrentes', icon: 'pi pi-refresh', routerLink: '/app/finanzas/recurrentes' },
+        { label: 'Metas de ahorro', icon: 'pi pi-bullseye', routerLink: '/app/finanzas/metas-ahorro' },
         { label: 'Reportes', icon: 'pi pi-chart-bar', routerLink: '/app/finanzas/reportes' },
       ],
     },
@@ -50,14 +63,16 @@ export class MenuConfigService {
       label: 'Administración',
       items: [
         { label: 'Página 6', icon: 'pi pi-file', routerLink: '/app/pagina-6' },
-        { label: 'Página 7', icon: 'pi pi-file', routerLink: '/app/pagina-7' },
+        { label: 'Correos procesados', icon: 'pi pi-envelope', routerLink: '/app/pagina-7' },
       ],
     },
     {
       label: 'Configuración',
       items: [
         { label: 'Mi hogar', icon: 'pi pi-home', routerLink: '/app/configuracion/mi-hogar' },
+        { label: 'Integración email', icon: 'pi pi-envelope', routerLink: '/app/configuracion/email' },
       ],
     },
-  ]);
+  ];
+  });
 }

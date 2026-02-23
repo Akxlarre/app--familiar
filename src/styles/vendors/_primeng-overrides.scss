@@ -498,3 +498,10 @@ app-main-layout p-toast.p-toast-top-center,
         pointer-events: auto;
     }
 }
+
+/* PrimeIcons: asegurar que los iconos usen la fuente correcta (evitar herencia de font-body) */
+.pi,
+i.pi {
+    font-family: primeicons !important;
+    font-style: normal !important;
+}

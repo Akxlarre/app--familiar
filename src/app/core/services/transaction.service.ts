@@ -8,9 +8,14 @@ export interface TransactionsFilter {
   toDate?: string;
   type?: 'income' | 'expense' | 'transfer';
   categoryId?: string;
+  categoryIds?: string[];
   profileId?: string;
   accountId?: string;
+  /** Cuando se usa scope personal: solo transacciones de estas cuentas. */
+  accountIds?: string[];
   search?: string;
+  minAmount?: number;
+  maxAmount?: number;
 }
 
 export interface CreateTransactionInput {
@@ -60,7 +65,7 @@ export class TransactionService {
         created_at,
         updated_at,
         categories (id, name, icon, color, type, parent_id),
-        accounts (id, name, type, icon, color),
+        accounts!account_id (id, name, type, icon, color),
         profiles (display_name)
       `)
       .eq('household_id', filter.householdId)
@@ -71,9 +76,13 @@ export class TransactionService {
     if (filter.toDate) query = query.lte('date', filter.toDate);
     if (filter.type) query = query.eq('type', filter.type);
     if (filter.categoryId) query = query.eq('category_id', filter.categoryId);
+    if (filter.categoryIds?.length) query = query.in('category_id', filter.categoryIds);
     if (filter.profileId) query = query.eq('profile_id', filter.profileId);
     if (filter.accountId) query = query.eq('account_id', filter.accountId);
+    if (filter.accountIds?.length) query = query.in('account_id', filter.accountIds);
     if (filter.search?.trim()) query = query.ilike('note', `%${filter.search.trim()}%`);
+    if (filter.minAmount != null) query = query.gte('amount', filter.minAmount);
+    if (filter.maxAmount != null) query = query.lte('amount', filter.maxAmount);
 
     const { data, error } = await query;
 
@@ -87,7 +96,7 @@ export class TransactionService {
       .select(`
         *,
         categories (id, name, icon, color, type, parent_id),
-        accounts (id, name, type, icon, color),
+        accounts!account_id (id, name, type, icon, color),
         profiles (display_name)
       `)
       .eq('id', id)
@@ -118,7 +127,7 @@ export class TransactionService {
       .select(`
         *,
         categories (id, name, icon, color, type, parent_id),
-        accounts (id, name, type, icon, color),
+        accounts!account_id (id, name, type, icon, color),
         profiles (display_name)
       `)
       .single();
@@ -144,7 +153,7 @@ export class TransactionService {
       .select(`
         *,
         categories (id, name, icon, color, type, parent_id),
-        accounts (id, name, type, icon, color),
+        accounts!account_id (id, name, type, icon, color),
         profiles (display_name)
       `)
       .single();
@@ -158,11 +167,12 @@ export class TransactionService {
     return { error: error ? (error as unknown as Error) : null };
   }
 
-  /** Expense total by category in a date range (for budget comparison). */
+  /** Expense total by category in a date range (for budget comparison). Opcional accountIds para scope personal. */
   async getExpensesByCategoryForMonth(
     householdId: string,
     year: number,
-    month: number
+    month: number,
+    accountIds?: string[]
   ): Promise<{ data: { category_id: string; total: number }[]; error: Error | null }> {
     const firstDay = `${year}-${String(month).padStart(2, '0')}-01`;
     const lastDay = new Date(year, month, 0);
@@ -173,6 +183,7 @@ export class TransactionService {
       fromDate: firstDay,
       toDate,
       type: 'expense',
+      accountIds,
     });
     if (error) return { data: [], error };
 
@@ -299,6 +310,10 @@ export class TransactionService {
             sort_order: Number(acc['sort_order'] ?? 0),
             created_at: acc['created_at'] as string,
             updated_at: acc['updated_at'] as string,
+            owner_profile_id: (acc['owner_profile_id'] as string) ?? null,
+            purpose: (acc['purpose'] as string) ?? null,
+            bank_name: (acc['bank_name'] as string) ?? null,
+            card_last4: (acc['card_last4'] as string) ?? null,
           }
         : undefined,
       profile_name: prof ? (prof['display_name'] as string) : undefined,
