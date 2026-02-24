@@ -65,7 +65,7 @@ export class TransactionService {
         created_at,
         updated_at,
         categories (id, name, icon, color, type, parent_id),
-        accounts!account_id (id, name, type, icon, color),
+        accounts!account_id (id, name, type, icon, color, purpose, owner_profile_id),
         profiles (display_name)
       `)
       .eq('household_id', filter.householdId)
@@ -96,7 +96,7 @@ export class TransactionService {
       .select(`
         *,
         categories (id, name, icon, color, type, parent_id),
-        accounts!account_id (id, name, type, icon, color),
+        accounts!account_id (id, name, type, icon, color, purpose, owner_profile_id),
         profiles (display_name)
       `)
       .eq('id', id)
@@ -127,7 +127,7 @@ export class TransactionService {
       .select(`
         *,
         categories (id, name, icon, color, type, parent_id),
-        accounts!account_id (id, name, type, icon, color),
+        accounts!account_id (id, name, type, icon, color, purpose, owner_profile_id),
         profiles (display_name)
       `)
       .single();
@@ -153,7 +153,7 @@ export class TransactionService {
       .select(`
         *,
         categories (id, name, icon, color, type, parent_id),
-        accounts!account_id (id, name, type, icon, color),
+        accounts!account_id (id, name, type, icon, color, purpose, owner_profile_id),
         profiles (display_name)
       `)
       .single();

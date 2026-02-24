@@ -46,6 +46,18 @@ export class MenuConfigService {
       ],
     },
     {
+      label: 'Cuidado Físico',
+      items: [
+        { label: 'Dashboard', icon: 'pi pi-heart', routerLink: '/app/fitness' },
+        { label: 'Iniciar sesión', icon: 'pi pi-play', routerLink: '/app/fitness/sesion' },
+        { label: 'Rutinas', icon: 'pi pi-list-check', routerLink: '/app/fitness/rutinas' },
+        { label: 'Ejercicios', icon: 'pi pi-bolt', routerLink: '/app/fitness/ejercicios' },
+        { label: 'Historial', icon: 'pi pi-history', routerLink: '/app/fitness/historial' },
+        { label: 'Mi cuerpo', icon: 'pi pi-chart-line', routerLink: '/app/fitness/cuerpo' },
+        { label: 'Progreso', icon: 'pi pi-chart-bar', routerLink: '/app/fitness/progreso' },
+      ],
+    },
+    {
       label: 'Operación',
       items: [
         { label: 'Página 2', icon: 'pi pi-file', routerLink: '/app/pagina-2' },

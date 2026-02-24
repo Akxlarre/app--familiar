@@ -91,11 +91,12 @@ import { AnimateInDirective } from '@core/directives/animate-in.directive';
                     Contraseña <span class="text-error">*</span>
                   </label>
                   <p-password
-                    id="password"
+                    inputId="password"
                     formControlName="password"
                     [toggleMask]="true"
                     [feedback]="false"
                     placeholder="••••••••"
+                    autocomplete="current-password"
                     fluid
                   />
                   <div class="min-h-5 text-xs text-error">
@@ -191,11 +192,12 @@ import { AnimateInDirective } from '@core/directives/animate-in.directive';
                       Contraseña <span class="text-error">*</span>
                     </label>
                     <p-password
-                      id="signup-password"
+                      inputId="signup-password"
                       formControlName="password"
                       [toggleMask]="true"
                       [feedback]="true"
                       placeholder="Mínimo 6 caracteres"
+                      autocomplete="new-password"
                       fluid
                     />
                     <div class="min-h-5 text-xs text-error">

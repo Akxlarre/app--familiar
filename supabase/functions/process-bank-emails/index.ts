@@ -30,6 +30,7 @@ interface BankParser {
   subject_pattern: string | null;
   body_rules: Record<string, string>;
   email_type: string;
+  default_account_id?: string | null;
 }
 
 interface AccountRow {
@@ -163,6 +164,13 @@ Deno.serve(async (req) => {
 
       if (!parsers?.length) continue;
 
+      const { data: hhRow } = await supabase
+        .from('households')
+        .select('timezone')
+        .eq('id', integration.household_id)
+        .maybeSingle();
+      const householdTz = ((hhRow as { timezone?: string } | null)?.timezone?.trim()) || 'America/Santiago';
+
       const { data: accounts } = await supabase
         .from('accounts')
         .select('id, bank_name, linked_email')
@@ -286,7 +294,13 @@ Deno.serve(async (req) => {
         if (detail.internalDate) {
           const d = new Date(parseInt(String(detail.internalDate)));
           if (!isNaN(d.getTime())) {
-            emailDate = d.toISOString().slice(0, 10);
+            const fmt = new Intl.DateTimeFormat('en-CA', {
+              timeZone: householdTz,
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+            });
+            emailDate = fmt.format(d);
             extractedData['email_internal_date'] = emailDate;
           }
         }

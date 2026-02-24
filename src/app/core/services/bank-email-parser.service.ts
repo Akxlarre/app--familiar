@@ -10,6 +10,7 @@ export interface CreateBankEmailParserInput {
   bodyRules: Record<string, string>;
   emailType: BankEmailType;
   sortOrder?: number;
+  defaultAccountId?: string | null;
 }
 
 export interface UpdateBankEmailParserInput {
@@ -20,6 +21,7 @@ export interface UpdateBankEmailParserInput {
   email_type?: BankEmailType;
   is_active?: boolean;
   sort_order?: number;
+  default_account_id?: string | null;
 }
 
 @Injectable({
@@ -62,6 +64,7 @@ export class BankEmailParserService {
         body_rules: input.bodyRules ?? {},
         email_type: input.emailType,
         sort_order: input.sortOrder ?? 0,
+        default_account_id: input.defaultAccountId ?? null,
         updated_at: new Date().toISOString(),
       })
       .select()
@@ -80,6 +83,7 @@ export class BankEmailParserService {
     if (input.email_type !== undefined) payload['email_type'] = input.email_type;
     if (input.is_active !== undefined) payload['is_active'] = input.is_active;
     if (input.sort_order !== undefined) payload['sort_order'] = input.sort_order;
+    if (input.default_account_id !== undefined) payload['default_account_id'] = input.default_account_id;
 
     const { data, error } = await this.supabase.client
       .from('bank_email_parsers')

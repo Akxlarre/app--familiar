@@ -27,6 +27,7 @@ export interface HouseholdInfo {
   id: string;
   name: string;
   inviteCode: string;
+  timezone: string;
 }
 
 export interface HouseholdMember {
@@ -74,23 +75,41 @@ export class HouseholdService {
   }
 
   /**
-   * Obtiene los datos del hogar (nombre, código de invitación).
+   * Obtiene los datos del hogar (nombre, código de invitación, zona horaria).
    */
   async getHousehold(householdId: string): Promise<{ data?: HouseholdInfo; error: Error | null }> {
     const { data, error } = await this.supabase.client
       .from('households')
-      .select('id, name, invite_code')
+      .select('id, name, invite_code, timezone')
       .eq('id', householdId)
       .maybeSingle();
 
     if (error) return { error: error as unknown as Error };
     if (!data) return { error: new Error('Hogar no encontrado') };
 
-    const h = data as { id: string; name: string; invite_code: string | null };
+    const h = data as { id: string; name: string; invite_code: string | null; timezone?: string | null };
     return {
-      data: { id: h.id, name: h.name, inviteCode: h.invite_code ?? '' },
+      data: {
+        id: h.id,
+        name: h.name,
+        inviteCode: h.invite_code ?? '',
+        timezone: h.timezone?.trim() || 'America/Santiago',
+      },
       error: null,
     };
+  }
+
+  /**
+   * Actualiza la zona horaria del hogar (para fechas de correos bancarios, transacciones, etc.).
+   */
+  async updateHouseholdTimezone(householdId: string, timezone: string): Promise<{ error: Error | null }> {
+    const tz = timezone?.trim() || 'America/Santiago';
+    const { error } = await this.supabase.client
+      .from('households')
+      .update({ timezone: tz, updated_at: new Date().toISOString() })
+      .eq('id', householdId);
+
+    return { error: error ? (error as unknown as Error) : null };
   }
 
   /**

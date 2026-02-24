@@ -29,15 +29,6 @@ import { PressFeedbackDirective } from '@core/directives/press-feedback.directiv
   template: `
     <div class="topbar sticky top-0 z-50">
       <div class="flex h-16 items-stretch">
-        <button
-          type="button"
-          class="topbar__hamburger"
-          (click)="layout.toggleSidebar()"
-          appPressFeedback
-          aria-label="Abrir menú"
-        >
-          <i class="pi pi-bars text-primary text-xl"></i>
-        </button>
         <div class="topbar__school-section" *ngIf="false">
           <app-school-selector />
         </div>
@@ -55,6 +46,15 @@ import { PressFeedbackDirective } from '@core/directives/press-feedback.directiv
             <app-user-menu />
           </div>
         </div>
+        <button
+          type="button"
+          class="topbar__hamburger"
+          (click)="layout.toggleSidebar()"
+          appPressFeedback
+          aria-label="Abrir menú"
+        >
+          <i class="pi pi-bars text-primary text-xl"></i>
+        </button>
       </div>
     </div>
   `,
@@ -82,6 +82,7 @@ import { PressFeedbackDirective } from '@core/directives/press-feedback.directiv
       cursor: pointer;
       color: var(--text-secondary);
       transition: color 0.2s ease;
+      order: -1; /* Mantener a la izquierda en móvil pese a estar después en DOM */
     }
     .topbar__hamburger:hover {
       color: var(--text-primary);

@@ -19,6 +19,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { AuthService } from '@core/services/auth.service';
+import { AccountService } from '@core/services/account.service';
 import { EmailIntegrationService } from '@core/services/email-integration.service';
 import { BankEmailParserService } from '@core/services/bank-email-parser.service';
 import { GsapAnimationsService } from '@core/services/gsap-animations.service';
@@ -121,76 +122,106 @@ const EMAIL_TYPE_OPTIONS: { label: string; value: BankEmailType }[] = [
 
       <!-- Parsers de banco -->
       <section class="rounded-xl border border-default bg-surface p-6 shadow-sm">
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-2">
           <h2 class="text-xl font-semibold text-primary flex items-center gap-2">
-            <i class="pi pi-list text-primary"></i>
-            Parsers de banco
+            <i class="pi pi-building text-primary"></i>
+            Parsers por banco
           </h2>
           <button
             pButton
             icon="pi pi-plus"
-            label="Nuevo parser"
-            (click)="openParserDialog(null)"
+            label="Nuevo banco"
+            severity="secondary"
+            [outlined]="true"
+            (click)="openParserDialog(null, null)"
             appPressFeedback="press"
           ></button>
         </div>
-        <p class="text-secondary text-sm mb-4">
-          Define reglas para extraer monto, comercio y tarjeta de los correos de tu banco.
+        <p class="text-secondary text-sm mb-5">
+          Cada banco puede tener varios parsers (alerta de compra, estado de cuenta, etc.). Define reglas para extraer monto, comercio y tarjeta.
         </p>
         @if (parsersLoading()) {
-          <div class="animate-pulse space-y-3">
+          <div class="animate-pulse space-y-4">
             @for (i of [1,2,3]; track i) {
-              <div class="h-16 bg-subtle rounded-xl"></div>
+              <div class="h-24 bg-subtle rounded-xl"></div>
             }
           </div>
+        } @else if (parsersByBank().length === 0) {
+          <app-empty-state
+            message="No hay parsers configurados"
+            subtitle="Añade un parser para empezar a importar transacciones desde el correo"
+            actionLabel="Nuevo parser"
+            (action)="openParserDialog(null, null)"
+          />
         } @else {
-          <div class="flex flex-col gap-3">
-            @for (p of parsers(); track p.id) {
-              <div
-                class="rounded-xl border border-default bg-elevated p-4 flex flex-wrap items-center justify-between gap-3"
-              >
-                <div>
-                  <p class="font-semibold text-primary">{{ p.bank_name }}</p>
-                  <p class="text-sm text-secondary">{{ p.sender_pattern }}</p>
-                  <p class="text-xs text-muted mt-1">{{ getEmailTypeLabel(p.email_type) }}</p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <p-toggleSwitch
-                    [(ngModel)]="p.is_active"
-                    inputId="active-{{ p.id }}"
-                    (ngModelChange)="toggleParserActive(p)"
-                  ></p-toggleSwitch>
-                  <label [for]="'active-' + p.id" class="text-sm text-secondary">Activo</label>
+          <div class="flex flex-col gap-5">
+            @for (group of parsersByBank(); track group.bankName) {
+              <div class="parser-bank-card rounded-xl border border-default bg-elevated overflow-hidden">
+                <div class="parser-bank-header px-4 py-3 flex flex-wrap items-center justify-between gap-3 bg-subtle/50 border-b border-default">
+                  <h3 class="font-semibold text-primary flex items-center gap-2">
+                    <i class="pi pi-credit-card text-muted"></i>
+                    {{ group.bankName }}
+                  </h3>
                   <button
                     pButton
-                    icon="pi pi-pencil"
-                    [text]="true"
-                    [rounded]="true"
+                    icon="pi pi-plus"
+                    label="Añadir parser"
+                    size="small"
                     severity="secondary"
-                    (click)="openParserDialog(p)"
-                    appPressFeedback="press"
-                  ></button>
-                  <button
-                    pButton
-                    icon="pi pi-trash"
                     [text]="true"
-                    [rounded]="true"
-                    severity="danger"
-                    (click)="deleteParser(p)"
+                    (click)="openParserDialog(null, group.bankName)"
                     appPressFeedback="press"
                   ></button>
+                </div>
+                <div class="parser-bank-body divide-y divide-default">
+                  @for (p of group.parsers; track p.id) {
+                    <div class="parser-row px-4 py-3 flex flex-wrap items-center justify-between gap-3 hover:bg-subtle/30 transition-colors">
+                      <div class="flex flex-col gap-1 min-w-0">
+                        <span class="parser-type-badge inline-flex items-center px-2 py-0.5 rounded text-xs font-medium w-fit" [attr.data-type]="p.email_type">
+                          {{ getEmailTypeLabel(p.email_type) }}
+                        </span>
+                        <p class="text-sm text-secondary truncate" [title]="p.sender_pattern">{{ p.sender_pattern }}</p>
+                      </div>
+                      <div class="flex items-center gap-3 shrink-0">
+                        <div class="flex items-center gap-2">
+                          <p-toggleSwitch
+                            [(ngModel)]="p.is_active"
+                            inputId="active-{{ p.id }}"
+                            (ngModelChange)="toggleParserActive(p)"
+                          ></p-toggleSwitch>
+                          <label [for]="'active-' + p.id" class="text-xs text-muted cursor-pointer">Activo</label>
+                        </div>
+                        <div class="flex gap-1">
+                          <button
+                            pButton
+                            icon="pi pi-pencil"
+                            [text]="true"
+                            [rounded]="true"
+                            size="small"
+                            severity="secondary"
+                            (click)="openParserDialog(p, null)"
+                            appPressFeedback="press"
+                            aria-label="Editar"
+                          ></button>
+                          <button
+                            pButton
+                            icon="pi pi-trash"
+                            [text]="true"
+                            [rounded]="true"
+                            size="small"
+                            severity="danger"
+                            (click)="deleteParser(p)"
+                            appPressFeedback="press"
+                            aria-label="Eliminar"
+                          ></button>
+                        </div>
+                      </div>
+                    </div>
+                  }
                 </div>
               </div>
             }
           </div>
-          @if (parsers().length === 0) {
-            <app-empty-state
-              message="No hay parsers configurados"
-              subtitle="Añade uno para empezar a importar transacciones desde el correo"
-              actionLabel="Nuevo parser"
-              (action)="openParserDialog(null)"
-            />
-          }
         }
       </section>
 
@@ -237,7 +268,21 @@ const EMAIL_TYPE_OPTIONS: { label: string; value: BankEmailType }[] = [
             <label class="text-sm font-medium text-primary block mb-1">Regex comercio (opcional)</label>
             <input pInputText formControlName="merchantRegex" placeholder="regex para comercio" class="w-full" />
           </div>
-          <p class="text-xs text-muted break-words">La cuenta se enlaza por <strong>banco + email</strong>: en Finanzas → Cuentas usa el mismo <strong>Nombre del banco</strong> de aquí y el <strong>Email vinculado</strong> (tu Gmail).</p>
+          <div>
+            <label class="text-sm font-medium text-primary block mb-1">Cuenta por defecto (opcional)</label>
+            <p-select
+              formControlName="defaultAccountId"
+              [options]="accountOptions()"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Seleccionar cuenta"
+              styleClass="w-full"
+              appendTo="body"
+              [showClear]="true"
+            />
+            <p class="text-xs text-secondary mt-1">Si el matching por banco+email falla, se usará esta cuenta. Útil cuando el reproceso sigue pendiente.</p>
+          </div>
+          <p class="text-xs text-muted break-words">La cuenta se enlaza por <strong>banco + email</strong>: en Finanzas → Cuentas usa el mismo <strong>Nombre del banco</strong> de aquí y el <strong>Email vinculado</strong> (tu Gmail). O asigna <strong>Cuenta por defecto</strong> arriba.</p>
         </form>
         <ng-template pTemplate="footer">
           <button pButton label="Cancelar" severity="secondary" (click)="parserDialogVisible = false"></button>
@@ -253,9 +298,21 @@ const EMAIL_TYPE_OPTIONS: { label: string; value: BankEmailType }[] = [
       </p-dialog>
     </div>
   `,
+  styles: [`
+    .parser-type-badge {
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+    }
+    .parser-type-badge[data-type="purchase_alert"] { background: var(--state-info-bg); color: var(--state-info); }
+    .parser-type-badge[data-type="statement"] { background: var(--bg-elevated); color: var(--text-primary); }
+    .parser-type-badge[data-type="payment_confirmation"],
+    .parser-type-badge[data-type="payment_received"] { background: var(--state-success-bg); color: var(--state-success); }
+    .parser-type-badge[data-type="installment_notice"] { background: var(--state-warning-bg); color: var(--state-warning); }
+  `],
 })
 export class EmailConfigComponent implements OnInit, AfterViewInit {
   private auth = inject(AuthService);
+  private accountService = inject(AccountService);
   private emailIntegration = inject(EmailIntegrationService);
   private parserService = inject(BankEmailParserService);
   private route = inject(ActivatedRoute);
@@ -276,9 +333,36 @@ export class EmailConfigComponent implements OnInit, AfterViewInit {
 
   parsersLoading = signal(true);
   parsers = signal<BankEmailParser[]>([]);
+  accountsForDialog = signal<{ id: string; name: string; bank_name: string | null }[]>([]);
   parserDialogVisible = false;
   editingParser = signal<BankEmailParser | null>(null);
   savingParser = signal(false);
+
+  accountOptions = computed(() => {
+    const accs = this.accountsForDialog();
+    return [
+      { label: '— Sin cuenta por defecto —', value: null },
+      ...accs.map((a) => ({
+        label: a.bank_name ? `${a.name} (${a.bank_name})` : a.name,
+        value: a.id,
+      })),
+    ];
+  });
+
+  /** Parsers agrupados por banco (bank_name). */
+  parsersByBank = computed(() => {
+    const list = this.parsers();
+    const map = new Map<string, BankEmailParser[]>();
+    for (const p of list) {
+      const key = p.bank_name.trim() || 'Sin nombre';
+      const arr = map.get(key) ?? [];
+      arr.push(p);
+      map.set(key, arr);
+    }
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([bankName, parsers]) => ({ bankName, parsers }));
+  });
 
   parserForm = this.fb.group({
     bankName: ['', Validators.required],
@@ -287,6 +371,7 @@ export class EmailConfigComponent implements OnInit, AfterViewInit {
     emailType: ['purchase_alert' as BankEmailType, Validators.required],
     amountRegex: ['', Validators.required],
     merchantRegex: [''],
+    defaultAccountId: [null as string | null],
   });
 
   ngOnInit(): void {
@@ -378,15 +463,28 @@ export class EmailConfigComponent implements OnInit, AfterViewInit {
     return EMAIL_TYPE_OPTIONS.find((o) => o.value === type)?.label ?? type;
   }
 
-  openParserDialog(parser: BankEmailParser | null): void {
+  async openParserDialog(parser: BankEmailParser | null, prefillBank: string | null): Promise<void> {
     this.editingParser.set(parser);
+    const householdId = this.auth.currentUser()?.householdId;
+    if (householdId) {
+      const { data } = await this.accountService.getAccounts(householdId, true);
+      this.accountsForDialog.set(
+        (data ?? []).map((a) => ({
+          id: a.id,
+          name: a.name,
+          bank_name: a.bank_name ?? null,
+        }))
+      );
+    }
+    const bankName = parser?.bank_name ?? prefillBank ?? '';
     this.parserForm.reset({
-      bankName: parser?.bank_name ?? '',
+      bankName,
       senderPattern: parser?.sender_pattern ?? '',
       subjectPattern: parser?.subject_pattern ?? '',
       emailType: parser?.email_type ?? 'purchase_alert',
       amountRegex: parser?.body_rules?.['amount_regex'] ?? '',
       merchantRegex: parser?.body_rules?.['merchant_regex'] ?? '',
+      defaultAccountId: parser?.default_account_id ?? null,
     });
     this.parserDialogVisible = true;
   }
@@ -415,6 +513,7 @@ export class EmailConfigComponent implements OnInit, AfterViewInit {
         subject_pattern: v.subjectPattern || null,
         body_rules: bodyRules,
         email_type: (v.emailType as BankEmailType) ?? 'purchase_alert',
+        default_account_id: v.defaultAccountId || null,
       });
       this.savingParser.set(false);
       if (!error) {
@@ -429,6 +528,7 @@ export class EmailConfigComponent implements OnInit, AfterViewInit {
         subjectPattern: v.subjectPattern || null,
         bodyRules,
         emailType: (v.emailType as BankEmailType) ?? 'purchase_alert',
+        defaultAccountId: v.defaultAccountId || null,
       });
       this.savingParser.set(false);
       if (!error) {

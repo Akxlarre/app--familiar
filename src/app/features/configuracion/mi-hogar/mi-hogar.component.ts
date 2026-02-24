@@ -9,17 +9,36 @@ import {
   AfterViewInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import { SelectModule } from 'primeng/select';
 import { AuthService } from '@core/services/auth.service';
 import { HouseholdService } from '@core/services/household.service';
+import { HouseholdContextService } from '@core/services/household-context.service';
 import { GsapAnimationsService } from '@core/services/gsap-animations.service';
 import { PressFeedbackDirective } from '@core/directives/press-feedback.directive';
+
+const TIMEZONE_OPTIONS: { label: string; value: string }[] = [
+  { label: 'Chile (Santiago)', value: 'America/Santiago' },
+  { label: 'Argentina (Buenos Aires)', value: 'America/Argentina/Buenos_Aires' },
+  { label: 'Colombia (Bogotá)', value: 'America/Bogota' },
+  { label: 'México (Ciudad de México)', value: 'America/Mexico_City' },
+  { label: 'Perú (Lima)', value: 'America/Lima' },
+  { label: 'USA Este (Nueva York)', value: 'America/New_York' },
+  { label: 'USA Centro (Chicago)', value: 'America/Chicago' },
+  { label: 'USA Oeste (Los Ángeles)', value: 'America/Los_Angeles' },
+  { label: 'España (Madrid)', value: 'Europe/Madrid' },
+  { label: 'Reino Unido (Londres)', value: 'Europe/London' },
+  { label: 'Francia (París)', value: 'Europe/Paris' },
+  { label: 'Alemania (Berlín)', value: 'Europe/Berlin' },
+  { label: 'UTC', value: 'UTC' },
+];
 
 @Component({
   selector: 'app-mi-hogar',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ButtonModule, PressFeedbackDirective],
+  imports: [CommonModule, FormsModule, ButtonModule, SelectModule, PressFeedbackDirective],
   template: `
     <div #container class="flex flex-col gap-6 font-body">
       <div>
@@ -67,6 +86,29 @@ import { PressFeedbackDirective } from '@core/directives/press-feedback.directiv
               <p class="text-success text-sm mt-2">Código copiado al portapapeles</p>
             }
           </div>
+
+          <div>
+            <label class="text-sm font-medium text-muted block mb-2">Zona horaria</label>
+            <p class="text-sm text-secondary mb-2">
+              Usada para fechas de correos bancarios y transacciones.
+            </p>
+            <p-select
+              [options]="timezoneOptions"
+              [(ngModel)]="selectedTimezone"
+              (ngModelChange)="onTimezoneChange()"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Seleccionar zona horaria"
+              styleClass="w-full max-w-sm"
+              appendTo="body"
+            />
+            @if (timezoneSaving()) {
+              <p class="text-muted text-sm mt-2">Guardando…</p>
+            }
+            @if (timezoneSaved()) {
+              <p class="text-success text-sm mt-2">Zona horaria guardada</p>
+            }
+          </div>
         </section>
       }
     </div>
@@ -79,14 +121,19 @@ import { PressFeedbackDirective } from '@core/directives/press-feedback.directiv
 export class MiHogarComponent implements OnInit, AfterViewInit {
   private auth = inject(AuthService);
   private householdService = inject(HouseholdService);
+  private householdContext = inject(HouseholdContextService);
   private gsap = inject(GsapAnimationsService);
 
   containerRef = viewChild<ElementRef<HTMLElement>>('container');
 
   loading = signal(true);
   error = signal<string | null>(null);
-  household = signal<{ id: string; name: string; inviteCode: string } | null>(null);
+  household = signal<{ id: string; name: string; inviteCode: string; timezone: string } | null>(null);
   copied = signal(false);
+  selectedTimezone = '';
+  timezoneOptions = TIMEZONE_OPTIONS;
+  timezoneSaving = signal(false);
+  timezoneSaved = signal(false);
 
   ngOnInit(): void {
     const householdId = this.auth.currentUser()?.householdId;
@@ -98,13 +145,32 @@ export class MiHogarComponent implements OnInit, AfterViewInit {
     this.householdService.getHousehold(householdId).then(({ data, error }) => {
       this.loading.set(false);
       if (error) this.error.set(error.message ?? 'Error al cargar el hogar');
-      else if (data) this.household.set(data);
+      else if (data) {
+        this.household.set(data);
+        this.selectedTimezone = data.timezone;
+      }
     });
   }
 
   ngAfterViewInit(): void {
     const el = this.containerRef()?.nativeElement;
     if (el) this.gsap.animatePageEnter(el);
+  }
+
+  async onTimezoneChange(): Promise<void> {
+    const h = this.household();
+    if (!h || !this.selectedTimezone) return;
+    this.timezoneSaving.set(true);
+    this.timezoneSaved.set(false);
+    const { error } = await this.householdService.updateHouseholdTimezone(h.id, this.selectedTimezone);
+    this.timezoneSaving.set(false);
+    if (!error) {
+      const updated = this.household() ? { ...this.household()!, timezone: this.selectedTimezone } : null;
+      this.household.set(updated);
+      this.householdContext.setHousehold(updated);
+      this.timezoneSaved.set(true);
+      setTimeout(() => this.timezoneSaved.set(false), 2000);
+    }
   }
 
   async copyCode(): Promise<void> {

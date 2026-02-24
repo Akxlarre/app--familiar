@@ -1,6 +1,6 @@
 // Supabase Edge Function: reprocess-pending-logs
-// Reintenta crear transacciones para logs en pending_review usando la configuración actual de cuentas.
-// Útil tras configurar Banco + Email vinculado en Finanzas → Cuentas.
+// Reintenta crear transacciones para logs en pending_review usando la configuración actual
+// de parsers y cuentas. Re-matchea cada log contra TODOS los parsers activos (no solo el original).
 // POST con Authorization: Bearer <user JWT>
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -18,12 +18,25 @@ interface PendingLog {
   raw_subject: string | null;
   raw_snippet: string | null;
   extracted_data: Record<string, unknown>;
+  bank_parser_id: string | null;
   bank_parser: {
     bank_name: string;
     email_type: string;
     body_rules?: Record<string, string>;
     default_account_id?: string | null;
+    sender_pattern?: string;
+    subject_pattern?: string | null;
   } | null;
+}
+
+interface BankParser {
+  id: string;
+  bank_name: string;
+  sender_pattern: string;
+  subject_pattern: string | null;
+  body_rules: Record<string, string>;
+  email_type: string;
+  default_account_id: string | null;
 }
 
 interface AccountRow {
@@ -90,7 +103,7 @@ Deno.serve(async (req) => {
 
     const { data: pendingRows } = await supabase
       .from('email_transactions_log')
-      .select('id, profile_id, household_id, inbox_email, raw_subject, raw_snippet, extracted_data, bank_email_parsers(bank_name, email_type, body_rules, default_account_id)')
+      .select('id, profile_id, household_id, inbox_email, raw_subject, raw_snippet, extracted_data, bank_parser_id, bank_email_parsers(id, bank_name, email_type, body_rules, default_account_id, sender_pattern, subject_pattern)')
       .eq('household_id', householdId)
       .eq('status', 'pending_review');
 
@@ -105,12 +118,15 @@ Deno.serve(async (req) => {
         raw_subject: row.raw_subject ?? null,
         raw_snippet: row.raw_snippet ?? null,
         extracted_data: (row.extracted_data as Record<string, unknown>) ?? {},
+        bank_parser_id: row.bank_parser_id ?? null,
         bank_parser: parser
           ? {
               bank_name: (parser as Record<string, unknown>).bank_name as string,
               email_type: (parser as Record<string, unknown>).email_type as string,
               body_rules: ((parser as Record<string, unknown>).body_rules as Record<string, string>) ?? {},
               default_account_id: (parser as Record<string, unknown>).default_account_id as string | null | undefined,
+              sender_pattern: (parser as Record<string, unknown>).sender_pattern as string | undefined,
+              subject_pattern: (parser as Record<string, unknown>).subject_pattern as string | null | undefined,
             }
           : null,
       };
@@ -123,7 +139,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Si los logs tienen inbox_email null (creados antes de añadir el campo), obtenerlo de email_integrations
+    // Cargar TODOS los parsers activos para re-matchear logs que no resuelven con su parser original
+    const { data: allParsersRaw } = await supabase
+      .from('bank_email_parsers')
+      .select('id, bank_name, sender_pattern, subject_pattern, body_rules, email_type, default_account_id')
+      .eq('household_id', householdId)
+      .eq('is_active', true);
+    const allParsers = (allParsersRaw ?? []) as BankParser[];
+
     const { data: integrations } = await supabase
       .from('email_integrations')
       .select('profile_id, inbox_email')
@@ -172,51 +195,160 @@ Deno.serve(async (req) => {
     let processed = 0;
 
     for (const log of pendingLogs) {
+      // --- Paso 1: Determinar el mejor parser para este log ---
+      // Intentar primero con el parser original; si falla (sin monto o sin cuenta),
+      // re-matchear contra todos los parsers activos por subject.
+      let effectiveParser = log.bank_parser;
+      let rematched = false;
+
+      const subjectLower = (log.raw_subject ?? '').toLowerCase();
+      const bodyText = [log.raw_snippet ?? '', log.raw_subject ?? ''].filter(Boolean).join('\n');
+
+      // Función para extraer monto con un parser dado
+      const extractAmount = (parser: { body_rules?: Record<string, string> } | null): number | null => {
+        if (!parser?.body_rules) return null;
+        const regex = parser.body_rules['amount_regex'] || parser.body_rules['amount'];
+        if (!regex || !bodyText) return null;
+        try {
+          const m = bodyText.match(new RegExp(regex, 'i'));
+          if (m?.[1]) return parseFloat(m[1].replace(/\./g, '').replace(',', '.')) || null;
+          if (m?.[0]) return parseFloat(m[0].replace(/\./g, '').replace(',', '.')) || null;
+        } catch { /* regex inválida */ }
+        return null;
+      };
+
       let amount = typeof log.extracted_data?.amount === 'number' ? log.extracted_data.amount : null;
       let extractedData = { ...log.extracted_data };
 
+      // Intentar extraer monto con el parser original si no está en extracted_data
       if (amount == null || amount <= 0) {
-        const rules = log.bank_parser?.body_rules ?? {};
-        const amountRegex = rules['amount_regex'] || rules['amount'];
-        const merchantRegex = rules['merchant_regex'] || rules['merchant'];
-        const bodyText = [log.raw_snippet ?? '', log.raw_subject ?? ''].filter(Boolean).join('\n');
-        if (amountRegex && bodyText) {
-          try {
-            const m = bodyText.match(new RegExp(amountRegex, 'i'));
-            if (m?.[1]) amount = parseFloat(m[1].replace(/\./g, '').replace(',', '.')) || null;
-            else if (m?.[0]) amount = parseFloat(m[0].replace(/\./g, '').replace(',', '.')) || null;
-            if (amount != null) extractedData['amount'] = amount;
-            if (merchantRegex) {
-              const mm = bodyText.match(new RegExp(merchantRegex, 'i'));
-              const merchant = mm?.[1] ?? mm?.[0] ?? null;
-              if (merchant) extractedData['merchant'] = merchant;
-            }
-          } catch {
-            /* regex inválida */
-          }
+        amount = extractAmount(effectiveParser);
+      }
+
+      // Si el parser original no logró extraer monto, re-matchear contra todos los parsers
+      if (amount == null || amount <= 0) {
+        const betterParser = allParsers.find((p) => {
+          if (!p.subject_pattern?.trim()) return false;
+          if (!subjectLower.includes(p.subject_pattern.trim().toLowerCase())) return false;
+          return extractAmount(p) != null;
+        });
+        if (betterParser) {
+          effectiveParser = {
+            bank_name: betterParser.bank_name,
+            email_type: betterParser.email_type,
+            body_rules: betterParser.body_rules,
+            default_account_id: betterParser.default_account_id,
+          };
+          amount = extractAmount(betterParser);
+          rematched = true;
         }
       }
-      if (amount == null || amount <= 0) continue;
 
-      const parserBank = log.bank_parser?.bank_name?.trim().toLowerCase();
+      // Si aún no hay monto, intentar con parsers sin subject_pattern (fallback)
+      if (amount == null || amount <= 0) {
+        const fallbackParser = allParsers.find((p) => {
+          if (p.subject_pattern?.trim()) return false;
+          return extractAmount(p) != null;
+        });
+        if (fallbackParser) {
+          effectiveParser = {
+            bank_name: fallbackParser.bank_name,
+            email_type: fallbackParser.email_type,
+            body_rules: fallbackParser.body_rules,
+            default_account_id: fallbackParser.default_account_id,
+          };
+          amount = extractAmount(fallbackParser);
+          rematched = true;
+        }
+      }
+
+      if (amount == null || amount <= 0) continue;
+      extractedData['amount'] = amount;
+
+      // Extraer merchant con el parser efectivo
+      const rules = effectiveParser?.body_rules ?? {};
+      const merchantRegex = rules['merchant_regex'] || rules['merchant'];
+      if (merchantRegex && bodyText) {
+        try {
+          const mm = bodyText.match(new RegExp(merchantRegex, 'i'));
+          const merchant = mm?.[1] ?? mm?.[0] ?? null;
+          if (merchant) extractedData['merchant'] = merchant;
+        } catch { /* regex inválida */ }
+      }
+
+      // --- Paso 2: Buscar cuenta ---
+      const parserBank = effectiveParser?.bank_name?.trim().toLowerCase();
       const inboxEmailRaw = log.inbox_email?.trim() || inboxByProfile.get(log.profile_id)?.trim();
       const inboxEmail = inboxEmailRaw?.toLowerCase();
-      const defaultAccountId = log.bank_parser?.default_account_id?.trim() || null;
+      const defaultAccountId = effectiveParser?.default_account_id?.trim() || null;
 
-      let match = accountList.find((a) => {
+      let matchedAccount: AccountRow | null | undefined = accountList.find((a) => {
         const accEmail = a.linked_email?.trim().toLowerCase();
         const accBank = a.bank_name?.trim().toLowerCase();
-        if (!accEmail || accEmail !== inboxEmail) return false;
-        if (!accBank) return false;
+        if (!accEmail || !inboxEmail || accEmail !== inboxEmail) return false;
+        if (!accBank || !parserBank) return false;
         return accBank === parserBank || accBank.includes(parserBank) || parserBank.includes(accBank);
       });
 
-      if (!match && defaultAccountId && accountList.some((a) => a.id === defaultAccountId)) {
-        match = accountList.find((a) => a.id === defaultAccountId) ?? null;
+      if (!matchedAccount && defaultAccountId) {
+        matchedAccount = accountList.find((a) => a.id === defaultAccountId);
       }
-      if (!match) continue;
 
-      const isIncome = log.bank_parser?.email_type === 'payment_received';
+      // Si el parser original no encontró cuenta, intentar con todos los parsers que matcheen el subject
+      if (!matchedAccount && !rematched) {
+        for (const p of allParsers) {
+          if (p.subject_pattern?.trim() && !subjectLower.includes(p.subject_pattern.trim().toLowerCase())) continue;
+          const pBank = p.bank_name?.trim().toLowerCase();
+          const found = accountList.find((a) => {
+            const accEmail = a.linked_email?.trim().toLowerCase();
+            const accBank = a.bank_name?.trim().toLowerCase();
+            if (!accEmail || !inboxEmail || accEmail !== inboxEmail) return false;
+            if (!accBank || !pBank) return false;
+            return accBank === pBank || accBank.includes(pBank) || pBank.includes(accBank);
+          });
+          if (found) {
+            matchedAccount = found;
+            effectiveParser = {
+              bank_name: p.bank_name,
+              email_type: p.email_type,
+              body_rules: p.body_rules,
+              default_account_id: p.default_account_id,
+            };
+            // Re-extraer con el nuevo parser si es necesario
+            const newAmount = extractAmount({ body_rules: p.body_rules });
+            if (newAmount != null && newAmount > 0) {
+              amount = newAmount;
+              extractedData['amount'] = amount;
+            }
+            rematched = true;
+            break;
+          }
+          if (!found && p.default_account_id) {
+            const defAcc = accountList.find((a) => a.id === p.default_account_id);
+            if (defAcc) {
+              matchedAccount = defAcc;
+              effectiveParser = {
+                bank_name: p.bank_name,
+                email_type: p.email_type,
+                body_rules: p.body_rules,
+                default_account_id: p.default_account_id,
+              };
+              const newAmount = extractAmount({ body_rules: p.body_rules });
+              if (newAmount != null && newAmount > 0) {
+                amount = newAmount;
+                extractedData['amount'] = amount;
+              }
+              rematched = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!matchedAccount) continue;
+
+      // --- Paso 3: Crear transacción ---
+      const isIncome = effectiveParser?.email_type === 'payment_received';
       const categoryId = isIncome ? incomeCategoryId : expenseCategoryId;
       if (!categoryId) continue;
 
@@ -235,7 +367,7 @@ Deno.serve(async (req) => {
         .insert({
           household_id: log.household_id,
           profile_id: log.profile_id,
-          account_id: match.id,
+          account_id: matchedAccount.id,
           category_id: categoryId,
           type: txType,
           amount,
@@ -247,13 +379,22 @@ Deno.serve(async (req) => {
         .single();
 
       if (!txErr && tx?.id) {
+        // Actualizar log: marcar como auto_created y (si se rematcheó) actualizar el parser vinculado
+        const updatePayload: Record<string, unknown> = {
+          status: 'auto_created',
+          transaction_id: tx.id,
+          extracted_data: extractedData,
+          processed_at: new Date().toISOString(),
+        };
+        // Si se encontró un parser mejor, actualizar la FK para reflejar el match real
+        if (rematched) {
+          const bestParser = allParsers.find((p) => p.bank_name === effectiveParser?.bank_name && p.email_type === effectiveParser?.email_type);
+          if (bestParser) updatePayload['bank_parser_id'] = bestParser.id;
+        }
+
         await supabase
           .from('email_transactions_log')
-          .update({
-            status: 'auto_created',
-            transaction_id: tx.id,
-            processed_at: new Date().toISOString(),
-          })
+          .update(updatePayload)
           .eq('id', log.id);
         processed++;
       }
@@ -267,18 +408,18 @@ Deno.serve(async (req) => {
     } else if (stillPending > 0) {
       const first = pendingLogs[0];
       let firstAmount = typeof first.extracted_data?.amount === 'number' ? first.extracted_data.amount : null;
-      if (firstAmount == null && first.bank_parser?.body_rules) {
-        const rules = first.bank_parser.body_rules;
-        const amountRegex = rules['amount_regex'] || rules['amount'];
-        const bodyText = [first.raw_snippet ?? '', first.raw_subject ?? ''].filter(Boolean).join('\n');
-        if (amountRegex && bodyText) {
+      if (firstAmount == null) {
+        for (const p of allParsers) {
+          const regex = p.body_rules?.['amount_regex'] || p.body_rules?.['amount'];
+          if (!regex) continue;
+          const bodyText = [first.raw_snippet ?? '', first.raw_subject ?? ''].filter(Boolean).join('\n');
+          if (!bodyText) continue;
           try {
-            const m = bodyText.match(new RegExp(amountRegex, 'i'));
+            const m = bodyText.match(new RegExp(regex, 'i'));
             if (m?.[1]) firstAmount = parseFloat(m[1].replace(/\./g, '').replace(',', '.'));
             else if (m?.[0]) firstAmount = parseFloat(m[0].replace(/\./g, '').replace(',', '.'));
-          } catch {
-            /* */
-          }
+            if (firstAmount != null && firstAmount > 0) break;
+          } catch { /* */ }
         }
       }
       const bank = first.bank_parser?.bank_name ?? '?';

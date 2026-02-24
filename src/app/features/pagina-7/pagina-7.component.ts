@@ -184,7 +184,7 @@ type LogWithBank = EmailTransactionLog & { bank_name?: string };
                       }
                     </div>
                   </div>
-                  <div class="flex flex-col items-end gap-1 shrink-0">
+                    <div class="flex flex-col items-end gap-1 shrink-0">
                     <div class="flex items-center gap-2">
                       <span
                         class="text-xs px-2 py-1 rounded-full font-medium"
@@ -197,7 +197,16 @@ type LogWithBank = EmailTransactionLog & { bank_name?: string };
                       >
                         {{ getStatusLabel(log.status) }}
                       </span>
-                      <span class="text-xs text-muted">{{ log.processed_at | date : 'd/M/yy HH:mm' }}</span>
+                      <span
+                        class="text-xs text-muted"
+                        [title]="getEmailDate(log) ? ('Procesado: ' + (log.processed_at | date : 'd/M/yy HH:mm')) : null"
+                      >
+                        @if (getEmailDate(log)) {
+                          {{ getEmailDate(log) | date : 'd/M/yy' }}
+                        } @else {
+                          {{ log.processed_at | date : 'd/M/yy HH:mm' }}
+                        }
+                      </span>
                     </div>
                     @if (log.status === 'pending_review' && (log.bank_name || log.inbox_email)) {
                       <p class="text-xs text-muted text-right max-w-[200px]">
@@ -249,6 +258,20 @@ export class Pagina7Component implements OnInit, AfterViewInit {
     ].filter((r) => r.value > 0);
   });
 
+  /** Fecha del correo (del banco) si existe. */
+  getEmailDate(log: LogWithBank): string | null {
+    const v = log.extracted_data?.['email_internal_date'];
+    return typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null;
+  }
+
+  /** Fecha efectiva del correo: email_internal_date (del banco) si existe, sino fecha local de processed_at. */
+  private getLogDateKey(log: LogWithBank): string {
+    const emailDate = this.getEmailDate(log);
+    if (emailDate) return emailDate;
+    const d = new Date(log.processed_at);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
   dayBarData = computed(() => {
     const list = this.logs();
     const byDay = new Map<string, number>();
@@ -256,11 +279,11 @@ export class Pagina7Component implements OnInit, AfterViewInit {
     for (let i = 0; i < 7; i++) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
-      const key = d.toISOString().slice(0, 10);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       byDay.set(key, 0);
     }
     for (const log of list) {
-      const key = log.processed_at.slice(0, 10);
+      const key = this.getLogDateKey(log);
       if (byDay.has(key)) byDay.set(key, (byDay.get(key) ?? 0) + 1);
     }
     return Array.from(byDay.entries())

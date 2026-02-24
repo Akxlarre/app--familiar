@@ -28,6 +28,7 @@ import { ConfirmModalService } from '@core/services/confirm-modal.service';
 import { PressFeedbackDirective } from '@core/directives/press-feedback.directive';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { TransaccionFormComponent } from './transaccion-form/transaccion-form.component';
+import { getPurposeLabel } from '@core/constants/purpose';
 import type { Transaction, Account, Category } from '@core/models/finance.model';
 import type { HouseholdMember } from '@core/services/household.service';
 
@@ -152,7 +153,7 @@ import type { HouseholdMember } from '@core/services/household.service';
                 </div>
                 <div class="min-w-0">
                   <p class="font-semibold text-primary truncate">
-                    {{ tx.category?.name ?? (tx.type === 'transfer' ? 'Transferencia' : '—') }}
+                    {{ getTransactionLabel(tx) }}
                   </p>
                   <p class="text-sm text-secondary">
                     {{ tx.date | date : 'd/M/yyyy' }}
@@ -272,6 +273,20 @@ export class TransaccionesComponent implements OnInit, AfterViewInit {
     { id: null, name: 'Todas las cuentas' },
     ...this.accounts(),
   ]);
+
+  getTransactionLabel(tx: Transaction): string {
+    const purpose = tx.account?.purpose?.trim();
+    if (purpose) {
+      const label = getPurposeLabel(purpose);
+      if (purpose === 'personal' && tx.account?.owner_profile_id) {
+        const owner = this.members().find((m) => m.id === tx.account!.owner_profile_id);
+        const ownerName = owner?.display_name?.trim() || 'Usuario';
+        return `${label} (${ownerName})`;
+      }
+      return label;
+    }
+    return tx.category?.name ?? (tx.type === 'transfer' ? 'Transferencia' : '—');
+  }
 
   ngOnInit(): void {
     this.loadData();

@@ -10,8 +10,10 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 import { TopbarComponent } from '../topbar/topbar.component';
 import { ToastHeadlessComponent } from '../toast-headless/toast-headless.component';
 import { ConfirmModalComponent } from '@shared/components/confirm-modal';
+import { AuthService } from '@core/services/auth.service';
 import { LayoutService } from '@core/services/layout.service';
 import { ModalOverlayService } from '@core/services/modal-overlay.service';
+import { HouseholdContextService } from '@core/services/household-context.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -59,10 +61,12 @@ import { ModalOverlayService } from '@core/services/modal-overlay.service';
   `,
 })
 export class MainLayoutComponent implements AfterViewInit {
+  private auth = inject(AuthService);
   private layout = inject(LayoutService);
   private doc = inject(DOCUMENT);
   private modalOverlayService = inject(ModalOverlayService);
   private router = inject(Router);
+  private householdContext = inject(HouseholdContextService);
 
   modalOverlay = viewChild<ElementRef<HTMLElement>>('modalOverlay');
 
@@ -70,6 +74,7 @@ export class MainLayoutComponent implements AfterViewInit {
   hideShell = signal(false);
 
   constructor() {
+    this.auth.whenReady.then(() => this.householdContext.load());
     effect(() => {
       const open = this.layout.sidebarOpen();
       const body = this.doc.body;

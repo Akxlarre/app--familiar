@@ -35,6 +35,11 @@ export const routes: Routes = [
           import('./features/finanzas/finanzas.routes').then((m) => m.FINANZAS_ROUTES),
       },
       {
+        path: 'fitness',
+        loadChildren: () =>
+          import('./features/fitness/fitness.routes').then((m) => m.FITNESS_ROUTES),
+      },
+      {
         path: 'pagina-1',
         loadComponent: () =>
           import('./features/pagina-1/pagina-1.component').then((m) => m.Pagina1Component),

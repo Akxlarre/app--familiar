@@ -4,6 +4,19 @@ Guía para configurar los parsers de **Integración email** con los correos que 
 
 ---
 
+## Por qué una transacción queda en "Pendiente"
+
+Una transacción va a **Pendiente** (`pending_review`) en lugar de crearse automáticamente cuando:
+
+1. **No hay cuenta vinculada**: En **Finanzas → Cuentas** debes tener una cuenta con el mismo **Nombre del banco** (ej. "Mach") y el **Email vinculado** igual a tu Gmail. Sin eso, la app no sabe en qué cuenta crear la transacción.
+2. **El asunto no coincide**: El patrón de asunto debe estar **contenido** en el asunto real. Ejemplo: si el correo dice "Tu compra con MACH" y tu parser tiene "Tu compra con MACHBANK", no coincide (el asunto real no incluye "MACHBANK"). Usa un patrón más corto como `Tu compra con MACH` para que coincida con ambos.
+3. **El regex del monto no extrae el valor**: Si el cuerpo del correo usa "Total" en lugar de "Monto CLP", el regex `Monto CLP[^$]*\$?\s*([\d.]+)` no hará match. Añade un regex alternativo que capture "Total" (ver sección 1b).
+4. **El parser no está activo** o hay otro parser que matchea primero (el orden importa).
+
+Para reprocesar pendientes: **Correos procesados** → botón "Reprocesar pendientes".
+
+---
+
 ## 1. Compras con tarjeta — "Tu compra con MACHBANK"
 
 **Correo:** Comprobante de pago con Comercio, Monto CLP, Últimos 4 dígitos de la tarjeta (ej. SUPER GANGA, $ 7.778 CLP, 9558).
@@ -21,6 +34,18 @@ Guía para configurar los parsers de **Integración email** con los correos que 
 **Notas:**  
 - Con este tipo la app puede crear la transacción automáticamente si la confianza es alta.  
 - En **Finanzas → Cuentas** pon en tu tarjeta de débito/crédito los **Últimos 4 dígitos** (ej. 9558) para que la transacción se asocie a esa cuenta.
+
+### 1b. Variante "Tu compra con MACH" (asunto corto)
+
+Algunos correos usan asunto **"Tu compra con MACH"** (sin "BANK"). El cuerpo puede tener **"Total $4.600"** (sin dos puntos) o **"Total: $4.500"** (con dos puntos).
+
+| Campo | Valor |
+|-------|--------|
+| **Patrón asunto** | `Tu compra con MACH` |
+| **Monto (regex)** | `(?:Total|Monto\s*CLP)[^0-9]*\$?\s*([\d.]+)` |
+| **Comercio (regex)** | `Comercio[^:]*:?\s*([^\n*<]+)` |
+
+Este regex de monto cubre: "Total $4.600", "Total: $4.500", "Monto CLP $4.500", "Total 4.500".
 
 ---
 
