@@ -42,6 +42,17 @@
 | `ReceiptService` | Boletas y ítems |
 | `ExportService` | Exportación CSV/Excel/PDF |
 
+### Nutrición (módulo nutrición)
+
+| Servicio | Propósito |
+|----------|-----------|
+| `NutritionCalculatorService` | Cálculos puros: IMC, TMB (Mifflin-St Jeor), TDEE, metas calóricas y de macros, rango peso saludable |
+| `NutritionProfileService` | CRUD perfil nutricional; recalibrateFromWeight; sincronización con BodyLog |
+| `FoodDatabaseService` | Búsqueda en base propia, por barcode, Open Food Facts fallback, importación, recientes/frecuentes |
+| `FoodLogService` | Log diario de comidas; getLogsByDate(Grouped); create/update/delete; daily summary cache |
+| `SavedMealService` | Comidas guardadas (recetas); CRUD; logSavedMeal con porciones escalables |
+| `NutritionStatsService` | Resumen semanal, promedios, adherencia al objetivo, proteína histórica, correlación peso-calorías |
+
 ---
 
 ## Cuándo usar cada uno
@@ -64,3 +75,4 @@
 | Cuentas, presupuestos, transacciones, resumen financiero | `AccountService`, `BudgetService`, `TransactionService`, `FinanceSummaryService` |
 | Tarjetas de crédito, cuotas, pago de TC | `CreditCardDetailsService`, `InstallmentPurchaseService` |
 | Integración Gmail, parsers bancarios, transacciones sugeridas desde email | `EmailIntegrationService`, `BankEmailParserService`, `EmailTransactionLogService` |
+| Perfil nutricional, calorías, macros, food log, comidas guardadas, estadísticas nutrición | `NutritionProfileService`, `FoodLogService`, `FoodDatabaseService`, `SavedMealService`, `NutritionStatsService`, `NutritionCalculatorService` |

@@ -35,9 +35,19 @@ export const routes: Routes = [
           import('./features/finanzas/finanzas.routes').then((m) => m.FINANZAS_ROUTES),
       },
       {
+        path: 'inventario',
+        loadChildren: () =>
+          import('./features/inventario/inventario.routes').then((m) => m.INVENTARIO_ROUTES),
+      },
+      {
         path: 'fitness',
         loadChildren: () =>
           import('./features/fitness/fitness.routes').then((m) => m.FITNESS_ROUTES),
+      },
+      {
+        path: 'nutricion',
+        loadChildren: () =>
+          import('./features/nutricion/nutricion.routes').then((m) => m.NUTRICION_ROUTES),
       },
       {
         path: 'pagina-1',

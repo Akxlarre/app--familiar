@@ -7,14 +7,23 @@ import {
   computed,
   OnDestroy,
   effect,
+  inject,
+  ViewChild,
+  ElementRef,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
+import gsap from 'gsap';
+import { GsapAnimationsService } from '@core/services/gsap-animations.service';
 
 const PRESETS = [60, 120, 180, 240]; // 1:00, 2:00, 3:00, 4:00
 const STORAGE_KEY = 'fitness_rest_timer_seconds';
+
+const CONIC_GRADIENT = (deg: number) =>
+  `conic-gradient(var(--p-primary-500, #3b82f6) 0deg ${deg}deg, var(--p-surface-200, #e5e7eb) ${deg}deg 360deg)`;
 
 @Component({
   selector: 'app-rest-timer',
@@ -23,9 +32,11 @@ const STORAGE_KEY = 'fitness_rest_timer_seconds';
   imports: [CommonModule, DialogModule, ButtonModule, FormsModule],
   template: `
     <p-dialog
-      [visible]="visible()"
+      [visible]="dialogVisible()"
+      (visibleChange)="onVisibleChange($event)"
       [header]="'Temporizador de descanso'"
       [modal]="true"
+      appendTo="body"
       [closable]="!running()"
       [style]="{ width: 'min(360px, 95vw)' }"
       (onHide)="onHide()"
@@ -75,12 +86,24 @@ const STORAGE_KEY = 'fitness_rest_timer_seconds';
       } @else {
         <p class="text-secondary text-sm mb-2">Ajustar la duración con los botones +/-.</p>
         <div class="flex flex-col items-center gap-4 py-4">
-          <div
-            class="relative w-48 h-48 rounded-full flex items-center justify-center border-4 border-primary/30"
-            [style.background]="circleBackground()"
-          >
-            <span class="text-4xl font-bold tabular-nums">{{ formatTime(secondsLeft()) }}</span>
-            <span class="absolute bottom-6 text-sm text-secondary">{{ formatTime(totalSeconds()) }} total</span>
+          <div class="relative w-48 h-48 rounded-full border-4 border-primary/30 flex items-center justify-center overflow-hidden">
+            <div
+              #circleRef
+              class="absolute inset-0 rounded-full"
+              [style.background]="circleBackground()"
+            ></div>
+            <div
+              #pulseOverlayRef
+              class="absolute inset-0 rounded-full pointer-events-none z-[1] opacity-0"
+              style="box-shadow: 0 0 28px rgba(239, 68, 68, 0.5)"
+            ></div>
+            <div class="relative z-10 flex items-center gap-0.5 text-4xl font-bold" style="perspective: 200px">
+              <span #minRef class="tabular-nums inline-block" style="transform-style: preserve-3d; min-width: 1ch"></span>
+              <span class="tabular-nums">:</span>
+              <span #secTensRef class="tabular-nums inline-block" style="transform-style: preserve-3d; min-width: 1ch"></span>
+              <span #secOnesRef class="tabular-nums inline-block" style="transform-style: preserve-3d; min-width: 1ch"></span>
+            </div>
+            <span class="absolute bottom-6 left-0 right-0 text-center text-sm text-secondary z-10">{{ formatTime(totalSeconds()) }} total</span>
           </div>
           <div class="flex gap-2 w-full">
             <button pButton label="-30 seg" severity="secondary" (click)="adjust(-30)" class="flex-1"></button>
@@ -93,6 +116,15 @@ const STORAGE_KEY = 'fitness_rest_timer_seconds';
   `,
 })
 export class RestTimerComponent implements OnDestroy {
+  private readonly gsap = inject(GsapAnimationsService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  @ViewChild('circleRef') circleRef?: ElementRef<HTMLElement>;
+  @ViewChild('pulseOverlayRef') pulseOverlayRef?: ElementRef<HTMLElement>;
+  @ViewChild('minRef') minRef?: ElementRef<HTMLElement>;
+  @ViewChild('secTensRef') secTensRef?: ElementRef<HTMLElement>;
+  @ViewChild('secOnesRef') secOnesRef?: ElementRef<HTMLElement>;
+
   visible = input.required<boolean>();
   /** Duración por defecto cuando se abre desde "descanso automático" (segundos). */
   defaultSeconds = input<number>(90);
@@ -104,10 +136,17 @@ export class RestTimerComponent implements OnDestroy {
   customMinutes = 1;
   customSeconds = 30;
 
+  /** Estado interno para two-way binding con p-dialog (el close button requiere poder actualizar visible). */
+  readonly dialogVisible = signal(false);
+
   readonly running = signal(false);
   readonly secondsLeft = signal(0);
   readonly totalSeconds = signal(0);
-  private intervalId: ReturnType<typeof setInterval> | null = null;
+
+  private progressTween: gsap.core.Tween | null = null;
+  private progress = { value: 1 };
+  private pulseCleanup: (() => void) | null = null;
+  private lastDisplayedSeconds = 0;
 
   readonly circleBackground = computed(() => {
     const total = this.totalSeconds();
@@ -115,15 +154,21 @@ export class RestTimerComponent implements OnDestroy {
     if (total <= 0) return 'transparent';
     const pct = left / total;
     const deg = 360 * (1 - pct);
-    return `conic-gradient(var(--p-primary-500, #3b82f6) 0deg ${deg}deg, var(--p-surface-200, #e5e7eb) ${deg}deg 360deg)`;
+    return CONIC_GRADIENT(deg);
   });
 
   constructor() {
     effect(() => {
       const v = this.visible();
+      this.dialogVisible.set(v);
       if (!v) this.stop();
       else this.loadSavedCustom();
     });
+  }
+
+  onVisibleChange(v: boolean): void {
+    this.dialogVisible.set(v);
+    if (!v) this.onHide();
   }
 
   private loadSavedCustom(): void {
@@ -151,7 +196,11 @@ export class RestTimerComponent implements OnDestroy {
     this.totalSeconds.set(seconds);
     this.secondsLeft.set(seconds);
     this.running.set(true);
-    this.intervalId = setInterval(() => this.tick(), 1000);
+    this.lastDisplayedSeconds = seconds;
+    this.progress.value = 1;
+
+    this.cdr.detectChanges();
+    setTimeout(() => this.setupTimerAnimations(), 0);
   }
 
   startCustom(): void {
@@ -160,30 +209,156 @@ export class RestTimerComponent implements OnDestroy {
     this.start(sec);
   }
 
-  private tick(): void {
-    const n = this.secondsLeft();
-    if (n <= 1) {
-      this.stop();
-      this.timerEnd.emit();
-      return;
+  private setupTimerAnimations(): void {
+    const circleEl = this.circleRef?.nativeElement;
+    if (!circleEl || !this.minRef?.nativeElement) return;
+
+    const total = this.totalSeconds();
+    const left = this.secondsLeft();
+
+    this.setDigitDisplay(left);
+
+    if (this.gsap.canAnimate()) {
+      this.gsap.animateRestTimerCircleIn(circleEl);
     }
-    this.secondsLeft.set(n - 1);
+
+    this.startProgressTween(left);
+
+    if (left <= 10 && this.gsap.canAnimate()) {
+      const overlayEl = this.pulseOverlayRef?.nativeElement;
+      if (overlayEl) this.pulseCleanup = this.gsap.animateRestTimerPulse(overlayEl);
+    }
+  }
+
+  private startProgressTween(durationSeconds: number): void {
+    this.killProgressTween();
+
+    const circleEl = this.circleRef?.nativeElement;
+    const minEl = this.minRef?.nativeElement;
+    const secTensEl = this.secTensRef?.nativeElement;
+    const secOnesEl = this.secOnesRef?.nativeElement;
+    const total = this.totalSeconds();
+
+    this.progress.value = durationSeconds / total;
+
+    this.progressTween = gsap.to(this.progress, {
+      value: 0,
+      duration: durationSeconds,
+      ease: 'none',
+      onUpdate: () => {
+        const pct = this.progress.value;
+        const secs = Math.ceil(pct * total);
+
+        if (circleEl) {
+          const deg = 360 * (1 - pct);
+          circleEl.style.background = CONIC_GRADIENT(deg);
+        }
+
+        if (secs !== this.lastDisplayedSeconds) {
+          const [prevMin, prevSecTens, prevSecOnes] = this.getTimeParts(this.lastDisplayedSeconds);
+          const [newMin, newSecTens, newSecOnes] = this.getTimeParts(secs);
+
+          this.lastDisplayedSeconds = secs;
+          this.secondsLeft.set(secs);
+
+          if (this.gsap.canAnimate()) {
+            if (newMin !== prevMin && minEl) {
+              this.gsap.animateRestTimerDigitFlip(minEl, String(newMin));
+            }
+            if (newSecTens !== prevSecTens && secTensEl) {
+              this.gsap.animateRestTimerDigitFlip(secTensEl, String(newSecTens));
+            }
+            if (newSecOnes !== prevSecOnes && secOnesEl) {
+              this.gsap.animateRestTimerDigitFlip(secOnesEl, String(newSecOnes));
+            }
+          } else {
+            this.setDigitDisplay(secs);
+          }
+
+          if (secs <= 10 && secs > 0 && !this.pulseCleanup && this.gsap.canAnimate()) {
+            const overlayEl = this.pulseOverlayRef?.nativeElement;
+            if (overlayEl) this.pulseCleanup = this.gsap.animateRestTimerPulse(overlayEl);
+          }
+        }
+      },
+      onComplete: () => {
+        this.killProgressTween();
+        this.pulseCleanup?.();
+        this.pulseCleanup = null;
+
+        if (circleEl && this.gsap.canAnimate()) {
+          this.gsap.animateRestTimerComplete(circleEl, () => {
+            this.stop();
+            this.timerEnd.emit();
+          });
+        } else {
+          this.stop();
+          this.timerEnd.emit();
+        }
+      },
+    });
+  }
+
+  private killProgressTween(): void {
+    if (this.progressTween) {
+      this.progressTween.kill();
+      this.progressTween = null;
+    }
   }
 
   adjust(delta: number): void {
-    this.secondsLeft.update((s) => Math.max(0, Math.min(this.totalSeconds(), s + delta)));
+    const total = this.totalSeconds();
+    const current = this.secondsLeft();
+    const newLeft = Math.max(0, Math.min(total, current + delta));
+
+    if (newLeft === 0) {
+      this.skip();
+      return;
+    }
+
+    this.secondsLeft.set(newLeft);
+    this.lastDisplayedSeconds = newLeft;
+
+    this.setDigitDisplay(newLeft);
+
+    const circleEl = this.circleRef?.nativeElement;
+    if (circleEl) {
+      const pct = newLeft / total;
+      const deg = 360 * (1 - pct);
+      circleEl.style.background = CONIC_GRADIENT(deg);
+    }
+
+    this.pulseCleanup?.();
+    this.pulseCleanup = null;
+    if (newLeft <= 10 && this.gsap.canAnimate()) {
+      const overlayEl = this.pulseOverlayRef?.nativeElement;
+      if (overlayEl) this.pulseCleanup = this.gsap.animateRestTimerPulse(overlayEl);
+    }
+
+    this.startProgressTween(newLeft);
   }
 
   skip(): void {
-    this.stop();
-    this.timerEnd.emit();
+    const circleEl = this.circleRef?.nativeElement;
+    this.killProgressTween();
+    this.pulseCleanup?.();
+    this.pulseCleanup = null;
+
+    if (circleEl && this.gsap.canAnimate()) {
+      this.gsap.animateRestTimerComplete(circleEl, () => {
+        this.stop();
+        this.timerEnd.emit();
+      });
+    } else {
+      this.stop();
+      this.timerEnd.emit();
+    }
   }
 
   private stop(): void {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
+    this.killProgressTween();
+    this.pulseCleanup?.();
+    this.pulseCleanup = null;
     this.running.set(false);
   }
 
@@ -196,6 +371,23 @@ export class RestTimerComponent implements OnDestroy {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
+  /** Devuelve [minutos, decenasSegundos, unidadesSegundos] para flip selectivo. */
+  private getTimeParts(seconds: number): [number, number, number] {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return [m, Math.floor(s / 10), s % 10];
+  }
+
+  private setDigitDisplay(seconds: number): void {
+    const [min, secTens, secOnes] = this.getTimeParts(seconds);
+    const minEl = this.minRef?.nativeElement;
+    const secTensEl = this.secTensRef?.nativeElement;
+    const secOnesEl = this.secOnesRef?.nativeElement;
+    if (minEl) minEl.textContent = String(min);
+    if (secTensEl) secTensEl.textContent = String(secTens);
+    if (secOnesEl) secOnesEl.textContent = String(secOnes);
   }
 
   private saveCustom(seconds: number): void {

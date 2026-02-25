@@ -46,6 +46,20 @@ export class MenuConfigService {
       ],
     },
     {
+      label: 'Inventario',
+      items: [
+        { label: 'Despensa', icon: 'pi pi-box', routerLink: '/app/inventario' },
+        { label: 'Escanear boleta', icon: 'pi pi-camera', routerLink: '/app/inventario/escanear' },
+        {
+          label: 'Lista de compras',
+          icon: 'pi pi-shopping-cart',
+          routerLink: '/app/inventario/lista-compras',
+        },
+        { label: 'Precios', icon: 'pi pi-chart-line', routerLink: '/app/inventario/precios' },
+        { label: 'Vencimientos', icon: 'pi pi-clock', routerLink: '/app/inventario/vencimientos' },
+      ],
+    },
+    {
       label: 'Cuidado Físico',
       items: [
         { label: 'Dashboard', icon: 'pi pi-heart', routerLink: '/app/fitness' },
@@ -55,6 +69,16 @@ export class MenuConfigService {
         { label: 'Historial', icon: 'pi pi-history', routerLink: '/app/fitness/historial' },
         { label: 'Mi cuerpo', icon: 'pi pi-chart-line', routerLink: '/app/fitness/cuerpo' },
         { label: 'Progreso', icon: 'pi pi-chart-bar', routerLink: '/app/fitness/progreso' },
+      ],
+    },
+    {
+      label: 'Nutrición',
+      items: [
+        { label: 'Dashboard', icon: 'pi pi-apple', routerLink: '/app/nutricion' },
+        { label: 'Mi perfil', icon: 'pi pi-user', routerLink: '/app/nutricion/perfil' },
+        { label: 'Registro del día', icon: 'pi pi-list', routerLink: '/app/nutricion/log' },
+        { label: 'Comidas guardadas', icon: 'pi pi-bookmark', routerLink: '/app/nutricion/comidas-guardadas' },
+        { label: 'Historial', icon: 'pi pi-chart-line', routerLink: '/app/nutricion/historial' },
       ],
     },
     {

@@ -920,6 +920,115 @@ export class GsapAnimationsService {
     }
 
     /**
+     * Rest timer — entrada del círculo de countdown.
+     * Scale + fade con rebote suave.
+     * @param el - Elemento del círculo del temporizador
+     */
+    animateRestTimerCircleIn(el: HTMLElement): void {
+        if (!this.shouldAnimate()) {
+            gsap.set(el, { opacity: 1, scale: 1 });
+            return;
+        }
+        gsap.fromTo(
+            el,
+            { opacity: 0, scale: 0.85 },
+            {
+                opacity: 1,
+                scale: 1,
+                duration: 0.45,
+                ease: 'back.out(1.2)',
+                clearProps: 'transform',
+            }
+        );
+    }
+
+    /**
+     * Rest timer — flip 3D del dígito al cambiar el segundo.
+     * @param el - Elemento que muestra el tiempo (span)
+     * @param newValue - Nuevo texto a mostrar
+     * @param onComplete - Callback opcional al finalizar el flip
+     */
+    animateRestTimerDigitFlip(el: HTMLElement, newValue: string, onComplete?: () => void): void {
+        if (!this.shouldAnimate()) {
+            el.textContent = newValue;
+            onComplete?.();
+            return;
+        }
+        gsap.to(el, {
+            rotationX: -90,
+            opacity: 0,
+            duration: 0.12,
+            ease: 'power2.in',
+            onComplete: () => {
+                el.textContent = newValue;
+                gsap.fromTo(
+                    el,
+                    { rotationX: 90, opacity: 0 },
+                    {
+                        rotationX: 0,
+                        opacity: 1,
+                        duration: 0.12,
+                        ease: 'power2.out',
+                        clearProps: 'transform',
+                        onComplete,
+                    }
+                );
+            },
+        });
+    }
+
+    /**
+     * Rest timer — pulso de urgencia cuando quedan pocos segundos.
+     * Usa una capa separada (overlay) para no afectar el gradiente del círculo.
+     * Solo anima opacidad (sin scale) para evitar vibración.
+     * @param el - Elemento overlay (capa separada, no el círculo del gradiente)
+     * @returns Función de cleanup para detener el pulso
+     */
+    animateRestTimerPulse(el: HTMLElement): () => void {
+        if (!this.shouldAnimate()) return () => {};
+
+        gsap.set(el, { opacity: 0 });
+        const tween = gsap.to(el, {
+            opacity: 0.7,
+            duration: 0.6,
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut',
+        });
+
+        return () => {
+            tween.kill();
+            gsap.set(el, { opacity: 0 });
+        };
+    }
+
+    /**
+     * Rest timer — animación al completar (feedback visual).
+     * @param el - Elemento del círculo
+     * @param onComplete - Callback al finalizar
+     */
+    animateRestTimerComplete(el: HTMLElement, onComplete?: () => void): void {
+        if (!this.shouldAnimate()) {
+            onComplete?.();
+            return;
+        }
+        gsap.to(el, {
+            scale: 1.08,
+            duration: 0.25,
+            ease: 'back.out(2)',
+            onComplete: () => {
+                gsap.to(el, {
+                    scale: 1,
+                    duration: 0.2,
+                    ease: 'power2.out',
+                    clearProps: 'transform',
+                    onComplete,
+                });
+            },
+        });
+    }
+
+    /**
      * Stagger list items
      * @param items - NodeList o array de elementos
      */
@@ -945,6 +1054,14 @@ export class GsapAnimationsService {
      */
     private shouldAnimate(): boolean {
         return isPlatformBrowser(this.platformId) && !this.prefersReducedMotion;
+    }
+
+    /**
+     * Returns true if animations should run (browser + user hasn't reduced motion).
+     * Use in components that need to conditionally run custom GSAP animations.
+     */
+    canAnimate(): boolean {
+        return this.shouldAnimate();
     }
 
     /**

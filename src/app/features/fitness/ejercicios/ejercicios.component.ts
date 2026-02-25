@@ -162,6 +162,7 @@ function getEquipmentLabel(value: string | null): string {
         [(visible)]="showCustomModal"
         header="Nuevo ejercicio"
         [modal]="true"
+        appendTo="body"
         [style]="{ width: 'min(400px, 95vw)' }"
         (onHide)="closeCustomModal()"
         [draggable]="false"

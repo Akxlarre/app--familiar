@@ -82,6 +82,20 @@ exercises (catálogo global)
 | `todo_lists` | Lista compartida. `household_id`, `title`. |
 | `todo_items` | Ítem. `title`, `completed`, `assigned_to`, `sort_order`. |
 
+### 2.7 Nutrición (módulo nutrición v1)
+
+Migración: `20260225000000_nutrition_module_v1.sql`.
+
+| Tabla | Descripción |
+|-------|-------------|
+| `foods` | Catálogo de alimentos (compartido con inventario). `household_id` null = global (Open Food Facts). Macros por 100g, barcode, source. |
+| `food_aliases` | Nombres alternativos para búsqueda. |
+| `nutrition_profiles` | Perfil por usuario: sexo, birthdate, altura, peso, actividad, objetivo (déficit/mantenimiento/superávit), metas calóricas y de macros. |
+| `saved_meals` | Comidas guardadas (recetas) por usuario. Totales de macros. |
+| `saved_meal_items` | Ítems de una comida guardada: food_id, quantity_g. |
+| `food_logs` | Registro diario: profile_id, log_date, meal_type, food_id, quantity_g, macros precalculados. Opcional: from_saved_meal_id, pantry_item_id. |
+| `daily_nutrition_summaries` | Cache de totales diarios por usuario y fecha; goal_met. |
+
 ---
 
 ## 3. Columnas detalladas

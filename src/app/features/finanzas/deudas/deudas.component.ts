@@ -131,6 +131,7 @@ import type { Category } from '@core/models/finance.model';
         [(visible)]="payCardDialogVisible"
         header="Pagar tarjeta de crédito"
         [modal]="true"
+        appendTo="body"
         [style]="{ width: 'min(100%, 24rem)' }"
         (onHide)="resetPayCardForm()"
       >
@@ -162,6 +163,7 @@ import type { Category } from '@core/models/finance.model';
         [(visible)]="newDialogVisible"
         header="Nueva compra en cuotas"
         [modal]="true"
+        appendTo="body"
         [style]="{ width: 'min(100%, 26rem)' }"
         (onHide)="resetNewForm()"
       >

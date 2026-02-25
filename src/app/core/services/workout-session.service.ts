@@ -162,6 +162,28 @@ export class WorkoutSessionService {
     return { data: this.mapSet(set), isPr, error: null };
   }
 
+  async updateSet(
+    setId: string,
+    updates: { weight?: number | null; reps?: number | null }
+  ): Promise<{ data?: WorkoutSet; error: Error | null }> {
+    const payload: Record<string, unknown> = {};
+    if (updates.weight !== undefined) payload['weight'] = updates.weight;
+    if (updates.reps !== undefined) payload['reps'] = updates.reps;
+    const { data, error } = await this.supabase.client
+      .from('session_sets')
+      .update(payload)
+      .eq('id', setId)
+      .select()
+      .single();
+    if (error) return { error: error as unknown as Error };
+    return { data: this.mapSet(data), error: null };
+  }
+
+  async deleteSet(setId: string): Promise<{ error: Error | null }> {
+    const { error } = await this.supabase.client.from('session_sets').delete().eq('id', setId);
+    return { error: error ? (error as unknown as Error) : null };
+  }
+
   async getSessionsByProfile(
     profileId: string,
     options?: { limit?: number; fromDate?: string; toDate?: string }

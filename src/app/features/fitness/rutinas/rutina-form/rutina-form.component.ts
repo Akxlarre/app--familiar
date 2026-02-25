@@ -149,6 +149,7 @@ const DAYS_OPTIONS = [
       [(visible)]="showPicker"
       header="Seleccionar ejercicio"
       [modal]="true"
+      appendTo="body"
       [style]="{ width: 'min(420px, 95vw)' }"
       (onHide)="showPicker = false"
       [draggable]="false"

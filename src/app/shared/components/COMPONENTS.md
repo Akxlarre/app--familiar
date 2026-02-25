@@ -61,6 +61,21 @@
 
 ---
 
+## Módulo Nutrición (features/nutricion)
+
+| Componente | Propósito |
+|------------|-----------|
+| `app-nutricion-dashboard` | Dashboard del día: KPIs, resumen calórico, macros, desglose por comida |
+| `app-nutricion-dashboard-skeleton` | Skeleton del dashboard nutrición |
+| `app-perfil-nutricional` | Formulario perfil nutricional (datos corporales, objetivos, cálculos en tiempo real) |
+| `app-food-log-diario` | Registro del día por comida; selector fecha; agregar/eliminar entradas |
+| `app-buscar-alimento-dialog` | Diálogo búsqueda: recientes, buscar, comidas guardadas; preview macros; chip inventario |
+| `app-nuevo-alimento-dialog` | Ingreso manual de alimento desde etiqueta nutricional |
+| `app-comidas-guardadas` | Lista de comidas guardadas; registrar con porciones |
+| `app-historial-nutricion` | Historial: adherencia 30 días, semana actual, promedios |
+
+---
+
 ## Jerarquía de uso
 
 1. **Componentes de este índice** → Usar siempre si cubren el caso.

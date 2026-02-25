@@ -140,21 +140,38 @@ interface ExerciseRow {
                   </thead>
                   <tbody>
                     @for (set of row.currentSets; track set.id) {
-                      <tr class="border-b border-default/50">
-                        <td class="py-1 pr-2">{{ set.set_number }}</td>
-                        <td class="py-1 pr-2 text-secondary">
-                          @if (row.previousSets[set.set_number - 1]; as prev) {
-                            {{ prev.weight ?? '—' }} kg × {{ prev.reps ?? '—' }}
-                            @if (prev.rpe != null) { @ {{ prev.rpe }}
-                            }
-                          } @else { — }
-                        </td>
-                        <td class="py-1 pr-2 font-medium">{{ set.weight ?? '—' }}</td>
-                        <td class="py-1 pr-2">{{ set.reps ?? '—' }}</td>
-                        <td class="py-1">
-                          <span class="text-primary" aria-hidden="true">✓</span>
-                        </td>
-                      </tr>
+                    <tr class="border-b border-default/50">
+                      <td class="py-1 pr-2">{{ set.set_number }}</td>
+                      <td class="py-1 pr-2 text-secondary">
+                        @if (row.previousSets[set.set_number - 1]; as prev) {
+                          {{ prev.weight ?? '—' }} kg × {{ prev.reps ?? '—' }}
+                          @if (prev.rpe != null) { @ {{ prev.rpe }}
+                          }
+                        } @else { — }
+                      </td>
+                      <td class="py-1 pr-2">
+                        <input
+                          type="number"
+                          [ngModel]="getSetDraftWeight(set)"
+                          (ngModelChange)="onSetFieldChange(set, 'weight', $event)"
+                          min="0"
+                          step="0.5"
+                          class="w-full rounded border border-default px-2 py-1"
+                        />
+                      </td>
+                      <td class="py-1 pr-2">
+                        <input
+                          type="number"
+                          [ngModel]="getSetDraftReps(set)"
+                          (ngModelChange)="onSetFieldChange(set, 'reps', $event)"
+                          min="0"
+                          class="w-full rounded border border-default px-2 py-1"
+                        />
+                      </td>
+                      <td class="py-1">
+                        <span class="text-primary" aria-hidden="true">✓</span>
+                      </td>
+                    </tr>
                     }
                     <tr>
                       <td class="py-2 pr-2 align-middle">{{ row.currentSets.length + 1 }}</td>
@@ -168,7 +185,8 @@ interface ExerciseRow {
                       <td class="py-2 pr-2">
                         <input
                           type="number"
-                          [(ngModel)]="inputWeight[row.exerciseId]"
+                          [ngModel]="inputWeight[row.exerciseId] ?? 0"
+                          (ngModelChange)="setInputWeight(row.exerciseId, $event)"
                           placeholder="Kg"
                           min="0"
                           step="0.5"
@@ -178,9 +196,10 @@ interface ExerciseRow {
                       <td class="py-2 pr-2">
                         <input
                           type="number"
-                          [(ngModel)]="inputReps[row.exerciseId]"
+                          [ngModel]="inputReps[row.exerciseId] ?? 0"
+                          (ngModelChange)="setInputReps(row.exerciseId, $event)"
                           placeholder="Reps"
-                          min="1"
+                          min="0"
                           class="w-full rounded border border-default px-2 py-1"
                         />
                       </td>
@@ -235,6 +254,7 @@ interface ExerciseRow {
       [(visible)]="showSummaryModal"
       header="Resumen de sesión"
       [modal]="true"
+      appendTo="body"
       [style]="{ width: 'min(400px, 95vw)' }"
       (onHide)="onSummaryClose()"
       [draggable]="false"
@@ -267,6 +287,7 @@ interface ExerciseRow {
       [(visible)]="showAddExerciseModal"
       header="Añadir ejercicio a la sesión"
       [modal]="true"
+      appendTo="body"
       [style]="{ width: 'min(400px, 95vw)' }"
       [draggable]="false"
     >
@@ -288,6 +309,7 @@ interface ExerciseRow {
       [(visible)]="showReplaceExerciseModal"
       header="Reemplazar ejercicio"
       [modal]="true"
+      appendTo="body"
       [style]="{ width: 'min(400px, 95vw)' }"
       [draggable]="false"
     >
@@ -309,6 +331,7 @@ interface ExerciseRow {
       [(visible)]="showPostFinishRoutineOptions"
       header="Opciones para la rutina"
       [modal]="true"
+      appendTo="body"
       [closable]="false"
       [style]="{ width: 'min(420px, 95vw)' }"
       [draggable]="false"
@@ -378,6 +401,8 @@ export class SesionComponent implements OnInit, OnDestroy {
   inputWeight: Record<string, number> = {};
   inputReps: Record<string, number> = {};
   exerciseNoteDraft: Record<string, string> = {};
+  /** Borradores por set (se reflejan en la tabla y se guardan también en BD). */
+  draftSets: Record<string, { weight: number | null; reps: number | null }> = {};
   private restInterval: ReturnType<typeof setInterval> | null = null;
   private elapsedInterval: ReturnType<typeof setInterval> | null = null;
   private REST_DURATION = 90;
@@ -504,6 +529,7 @@ export class SesionComponent implements OnInit, OnDestroy {
     }
     this.session.set(session);
     this.sessionNotes.set(session.notes ?? '');
+    this.initDraftSets(session);
     this.mode.set('active');
     this.startElapsedTimer();
     const routineId = session.routine_id;
@@ -645,12 +671,21 @@ export class SesionComponent implements OnInit, OnDestroy {
     if (toAdd.length > 0) this.exerciseRows.update((rows) => [...rows, ...toAdd]);
   }
 
+  setInputWeight(exerciseId: string, value: number | string | null): void {
+    const n = value === '' || value == null ? 0 : Number(value);
+    this.inputWeight[exerciseId] = Number.isNaN(n) ? 0 : n;
+  }
+
+  setInputReps(exerciseId: string, value: number | string | null): void {
+    const n = value === '' || value == null ? 0 : Number(value);
+    this.inputReps[exerciseId] = Number.isNaN(n) ? 0 : n;
+  }
+
   async addSet(row: ExerciseRow): Promise<void> {
     const s = this.session();
     if (!s) return;
-    const weight = this.inputWeight[row.exerciseId] ?? row.suggestWeight ?? 0;
-    const reps = this.inputReps[row.exerciseId] ?? row.targetReps ?? 10;
-    if (reps < 1) return;
+    const weight = this.inputWeight[row.exerciseId] ?? 0;
+    const reps = this.inputReps[row.exerciseId] ?? 0;
     const setNumber = row.currentSets.length + 1;
     const user = this.authService.currentUser();
     if (!user?.id) return;
@@ -664,8 +699,8 @@ export class SesionComponent implements OnInit, OnDestroy {
     });
     if (error) return;
     if (isPr) { /* TODO: animación celebración PR */ }
-    this.inputWeight[row.exerciseId] = weight + 2.5;
-    this.inputReps[row.exerciseId] = reps;
+    this.inputWeight[row.exerciseId] = 0;
+    this.inputReps[row.exerciseId] = 0;
     this.refreshSession();
   }
 
@@ -690,6 +725,7 @@ export class SesionComponent implements OnInit, OnDestroy {
     const { data } = await this.workoutSessionService.getSession(s.id);
     if (data) {
       this.session.set(data);
+      this.initDraftSets(data);
       const routineId = data.routine_id;
       if (routineId) {
         const { data: routine } = await this.routineService.getRoutine(routineId);
@@ -727,6 +763,15 @@ export class SesionComponent implements OnInit, OnDestroy {
     const s = this.session();
     if (!s?.id) return;
     this.finishing.set(true);
+    const sets = (s as WorkoutSession & { sets?: WorkoutSetWithExercise[] })?.sets ?? [];
+    for (const set of sets) {
+      const draft = this.draftSets[set.id];
+      const w = draft ? (draft.weight ?? 0) : (set.weight ?? 0);
+      const r = draft ? (draft.reps ?? 0) : (set.reps ?? 0);
+      if (w === 0 || r === 0) {
+        await this.workoutSessionService.deleteSet(set.id);
+      }
+    }
     const { data, error } = await this.workoutSessionService.finishSession(s.id, this.sessionNotes() || null);
     this.finishing.set(false);
     if (error) {
@@ -853,6 +898,27 @@ export class SesionComponent implements OnInit, OnDestroy {
     return `${m}:${s.toString().padStart(2, '0')}`;
   }
 
+  getSetDraftWeight(set: WorkoutSetWithExercise): number | null {
+    const draft = this.draftSets[set.id];
+    return draft?.weight ?? set.weight ?? null;
+  }
+
+  getSetDraftReps(set: WorkoutSetWithExercise): number | null {
+    const draft = this.draftSets[set.id];
+    return draft?.reps ?? set.reps ?? null;
+  }
+
+  async onSetFieldChange(set: WorkoutSetWithExercise, field: 'weight' | 'reps', value: number | null): Promise<void> {
+    const existing = this.draftSets[set.id] ?? { weight: set.weight ?? null, reps: set.reps ?? null };
+    const next = { ...existing, [field]: value };
+    this.draftSets[set.id] = next;
+    this.saveDraftSetsToStorage();
+    await this.workoutSessionService.updateSet(set.id, {
+      weight: next.weight,
+      reps: next.reps,
+    });
+  }
+
   exerciseNoteDisplay(row: ExerciseRow): string {
     return this.exerciseNoteDraft[row.exerciseId] ?? row.exerciseNote ?? '';
   }
@@ -875,6 +941,40 @@ export class SesionComponent implements OnInit, OnDestroy {
     const s = this.session();
     if (!s?.id) return;
     this.workoutSessionService.updateSessionNotes(s.id, this.sessionNotes() || null);
+  }
+
+  private initDraftSets(session: WorkoutSession): void {
+    const key = this.getDraftStorageKey(session.id);
+    try {
+      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
+      if (raw) {
+        this.draftSets = JSON.parse(raw) as Record<string, { weight: number | null; reps: number | null }>;
+        return;
+      }
+    } catch {
+      // ignore
+    }
+    const sets = (session as WorkoutSession & { sets?: WorkoutSetWithExercise[] })?.sets ?? [];
+    const map: Record<string, { weight: number | null; reps: number | null }> = {};
+    for (const s of sets) {
+      map[s.id] = { weight: s.weight ?? null, reps: s.reps ?? null };
+    }
+    this.draftSets = map;
+  }
+
+  private saveDraftSetsToStorage(): void {
+    const s = this.session();
+    if (!s?.id) return;
+    try {
+      if (typeof localStorage === 'undefined') return;
+      localStorage.setItem(this.getDraftStorageKey(s.id), JSON.stringify(this.draftSets));
+    } catch {
+      // ignore
+    }
+  }
+
+  private getDraftStorageKey(sessionId: string): string {
+    return `fitness_session_sets_${sessionId}`;
   }
 
   async saveExerciseNote(row: ExerciseRow): Promise<void> {
