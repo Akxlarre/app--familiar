@@ -40,8 +40,8 @@ export class AuthService {
       }
     });
 
-    this.supabase.getUser().then(({ data: { user } }) => {
-      if (user) this.loadUserFromSession(user);
+    this.supabase.getUser().then(async ({ data: { user } }) => {
+      if (user) await this.loadUserFromSession(user);
     }).finally(() => resolveReady());
   }
 

@@ -50,6 +50,11 @@ export const routes: Routes = [
           import('./features/nutricion/nutricion.routes').then((m) => m.NUTRICION_ROUTES),
       },
       {
+        path: 'comidas',
+        loadChildren: () =>
+          import('./features/comidas/comidas.routes').then((m) => m.COMIDAS_ROUTES),
+      },
+      {
         path: 'pagina-1',
         loadComponent: () =>
           import('./features/pagina-1/pagina-1.component').then((m) => m.Pagina1Component),

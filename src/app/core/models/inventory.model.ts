@@ -5,7 +5,7 @@
 export type ProductLocation = 'refrigerador' | 'despensa' | 'freezer' | 'otro';
 export type StockStatus = 'ok' | 'low' | 'out';
 export type ShoppingListStatus = 'active' | 'closed' | 'archived';
-export type ShoppingListItemSource = 'manual' | 'low_stock' | 'out_of_stock' | 'recurring';
+export type ShoppingListItemSource = 'manual' | 'low_stock' | 'out_of_stock' | 'recurring' | 'meal_plan';
 
 export interface ProductCategory {
   id: string;
@@ -112,4 +112,3 @@ export interface ReceiptScanResult {
   date: string | null;
   total: number | null;
 }
-

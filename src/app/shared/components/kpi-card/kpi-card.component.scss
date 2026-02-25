@@ -19,15 +19,11 @@
 
     /* Tinted variant styles applied via class on host */
     &.card-tinted {
-        background: color-mix(in srgb, var(--color-primary) 4%, white);
+        background: color-mix(in srgb, var(--color-primary) 4%, var(--bg-surface-mix));
         border: 1px solid var(--accent-border);
         box-shadow: var(--shadow-sm);
     }
 
-    /* Bento specific override if needed */
-    &.bento-1x1 {
-        /* grid-column handled by parent grid on the host element itself */
-    }
 }
 
 .kpi-card {

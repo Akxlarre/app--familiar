@@ -5,7 +5,7 @@ import type {
   ShoppingListItem,
   ShoppingListItemSource,
   ShoppingListStatus,
-} from '@core/models/inventory.model';
+} from '../models/inventory.model';
 
 export interface CreateShoppingListInput {
   householdId: string;

@@ -90,26 +90,22 @@ export class ReceiptService {
     return { data: data.publicUrl, error: null };
   }
 
-  async processOcr(storagePath: string): Promise<{ data?: OcrResult; error: Error | null }> {
-    const url = `${environment.supabase.url}/functions/v1/ocr-receipt`;
-    const { data: { session } } = await this.supabase.client.auth.getSession();
-    const token = session?.access_token;
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ storage_path: storagePath }),
+  async processOcr(storagePath: string, householdId: string): Promise<{ data?: OcrResult; error: Error | null }> {
+    const { data, error } = await this.supabase.client.functions.invoke('scan-receipt-inventory', {
+      body: { storage_path: storagePath, household_id: householdId },
     });
 
-    if (!res.ok) {
-      const text = await res.text();
-      return { error: new Error(text || `OCR failed: ${res.status}`) };
-    }
+    if (error) return { error: error as unknown as Error };
 
-    const json = (await res.json()) as OcrResult;
-    return { data: json, error: null };
+    // Mapear el resultado de Gemini (ScanResult) al formato OcrResult que espera el componente de transacciones
+    const result = data as any;
+    const ocrResult: OcrResult = {
+      amount: result.total ?? null,
+      date: result.date ?? null,
+      merchant: result.store_name ?? null,
+      rawText: result.items?.map((i: any) => `${i.quantity}x ${i.raw_name}`).join('\n') ?? '',
+    };
+
+    return { data: ocrResult, error: null };
   }
 }

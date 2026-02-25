@@ -39,8 +39,9 @@
 | `SavingsGoalService` | Metas de ahorro |
 | `TagService` | Etiquetas de transacciones |
 | `TransactionSplitService` | División de gastos |
-| `ReceiptService` | Boletas y ítems |
-| `ExportService` | Exportación CSV/Excel/PDF |
+| `ReceiptService` | Boletas y ítems | [README](receipt.service.README.md) |
+| `ReceiptScannerService` | Escaneo detallado de boletas (IA) | [README](receipt-scanner.service.README.md) |
+| `ExportService` | Exportación CSV/Excel/PDF | |
 
 ### Nutrición (módulo nutrición)
 
@@ -52,6 +53,13 @@
 | `FoodLogService` | Log diario de comidas; getLogsByDate(Grouped); create/update/delete; daily summary cache |
 | `SavedMealService` | Comidas guardadas (recetas); CRUD; logSavedMeal con porciones escalables |
 | `NutritionStatsService` | Resumen semanal, promedios, adherencia al objetivo, proteína histórica, correlación peso-calorías |
+
+### Comidas (módulo planificación de comidas)
+
+| Servicio | Propósito |
+|----------|-----------|
+| `RecipeService` | CRUD del recetario del hogar; filtrado por meal_type, tiempo y tags; gestión de ingredientes (con link a `foods`) |
+| `MealPlanService` | Plan semanal: crear/activar/archivar planes; upsert de slots en la grilla; WeekGrid builder; resumen nutricional proyectado |
 
 ---
 
@@ -76,3 +84,5 @@
 | Tarjetas de crédito, cuotas, pago de TC | `CreditCardDetailsService`, `InstallmentPurchaseService` |
 | Integración Gmail, parsers bancarios, transacciones sugeridas desde email | `EmailIntegrationService`, `BankEmailParserService`, `EmailTransactionLogService` |
 | Perfil nutricional, calorías, macros, food log, comidas guardadas, estadísticas nutrición | `NutritionProfileService`, `FoodLogService`, `FoodDatabaseService`, `SavedMealService`, `NutritionStatsService`, `NutritionCalculatorService` |
+| Recetario del hogar (crear/editar/buscar recetas) | `RecipeService` |
+| Plan semanal de comidas, grilla, slots | `MealPlanService` |

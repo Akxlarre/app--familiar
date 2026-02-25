@@ -215,7 +215,7 @@
 }
 
 .notifications-container__filter--active:hover {
-  background: color-mix(in srgb, var(--color-primary) 15%, white);
+  background: color-mix(in srgb, var(--color-primary) 15%, var(--bg-surface-mix));
 }
 
 /* ============================================
@@ -261,7 +261,7 @@
 }
 
 .notifications-container__item--unread:hover {
-  background: color-mix(in srgb, var(--color-primary) 12%, white);
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--bg-surface-mix));
 }
 
 .notifications-container__dot {
@@ -274,12 +274,15 @@
   &[data-type='info'] {
     background: var(--state-info);
   }
+
   &[data-type='success'] {
     background: var(--state-success);
   }
+
   &[data-type='warning'] {
     background: var(--state-warning);
   }
+
   &[data-type='error'] {
     background: var(--state-error);
   }
@@ -352,5 +355,5 @@
 }
 
 .notifications-container__view-all:hover {
-  background: color-mix(in srgb, var(--color-primary) 15%, white);
+  background: color-mix(in srgb, var(--color-primary) 15%, var(--bg-surface-mix));
 }

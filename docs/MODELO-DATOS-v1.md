@@ -16,7 +16,7 @@ households (raíz)
     ├── expenses ── receipts
     ├── products ── inventory_logs
     ├── recipes ── recipe_ingredients
-    ├── meal_plans
+    ├── meal_plans ── meal_plan_slots
     └── todo_lists ── todo_items
 
 profiles
@@ -59,11 +59,14 @@ exercises (catálogo global)
 
 ### 2.4 Comidas
 
+Migración: `20260225100000_meals_module_v1.sql`.
+
 | Tabla | Descripción |
 |-------|-------------|
-| `recipes` | Receta. `name`, `instructions`, `image_path`, `calories`, `protein`, `carbs`, `fat`, `servings`. |
-| `recipe_ingredients` | Ingrediente con cantidad y unidad. |
-| `meal_plans` | Plan semanal. `plan_date`, `slot` (breakfast/lunch/dinner), `recipe_id`. |
+| `recipes` | Receta del hogar. `name`, `instructions`, `image_path`, `servings`, `calories`, `protein`, `carbs`, `fat`. Campos añadidos v1: `created_by`, `prep_time_min`, `meal_type` (breakfast/lunch/dinner/snack/any), `difficulty` (easy/medium/hard), `tags` (JSONB), `source_url`, `is_public`. |
+| `recipe_ingredients` | Ingrediente con cantidad y unidad. Campo añadido v1: `food_id` (FK a `foods`, nullable — permite calcular macros automáticos). |
+| `meal_plans` | Cabecera del plan semanal. `week_start_date`, `status` (draft/active/archived). Campos legacy mantenidos: `plan_date`, `slot`, `recipe_id`. |
+| `meal_plan_slots` | Celda de la grilla: `plan_id`, `day_of_week` (1–7), `meal_type`, `slot_type` (recipe/free/out/leftovers), `recipe_id`, `profile_id` (null = toda la familia), `is_done`. |
 
 ### 2.5 Ejercicio
 
@@ -255,3 +258,4 @@ Estas tablas y columnas se añadieron con las migraciones 20250221150000–20250
 | 2025-02-19 | Creación inicial del modelo v1. Tablas: households, profiles, invites, gastos, boletas, inventario, comidas, ejercicio, notas. RLS y Realtime configurados. | v1 |
 | 2025-02-21 | Mejoras módulo Finanzas: savings_goals (metas de ahorro), tags, transaction_tags (etiquetas), transaction_splits (división de gastos). Migración 20250221100000_finanzas_mejoras_inmediatas.sql | v1 |
 | 2025-02-21 | Sistema Financiero Inteligente: cuentas enriquecidas (accounts), email_integrations, bank_email_parsers, email_transactions_log, credit_card_details, installment_purchases, profile_id en budgets. Migraciones 20250221150000–20250221210000. | v1 |
+| 2026-02-25 | Módulo Planificación de Comidas v1: evoluciona recipes (prep_time_min, meal_type, difficulty, tags, source_url, is_public), recipe_ingredients (food_id → foods), meal_plans (week_start_date, status, created_by). Nueva tabla meal_plan_slots (grilla semanal). shopping_list_items.source ahora acepta 'meal_plan' + plan_id. Migración 20260225100000_meals_module_v1.sql. | v1 |

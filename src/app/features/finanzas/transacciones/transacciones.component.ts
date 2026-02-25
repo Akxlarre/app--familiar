@@ -424,7 +424,7 @@ export class TransaccionesComponent implements OnInit, AfterViewInit {
     this.saving.set(false);
     if (error || !path) return;
     this.pendingReceiptStoragePath = path;
-    const ocrRes = await this.receiptService.processOcr(path);
+    const ocrRes = await this.receiptService.processOcr(path, householdId);
     const form = this.formRef();
     if (ocrRes.data && form) {
       form.setAmountDateNote(

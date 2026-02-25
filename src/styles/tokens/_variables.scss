@@ -1,77 +1,86 @@
 /* ============================================
-   Design System Tokens - Auto Escuelas
-   Dual Theme: Red (Escuela A) / Blue (Escuela B)
+   Design System Tokens - App Familiar
+   Theme: Light (Default) & Dark Mode
+   Color Primary: Modern Trust Blue (#2563eb)
    ============================================ */
 
 /* ============================================
-   Raíz compartida — fondo claro profesional
+   Raíz compartida — Light Mode por defecto
    ============================================ */
 :root {
-  /* Fondos en capas */
-  --bg-base: #f7f7f8; /* fondo base — blanco cálido, no clínico */
-  --bg-surface: #ffffff; /* superficies: tarjetas, modales, sidebar */
-  --bg-elevated: #f0f0f2; /* hover de filas, secciones diferenciadas */
-  --bg-subtle: #eaeaec; /* inputs, chips, separadores */
+  /* --- 1. FONDOS Y SUPERFICIES (Light Mode) --- */
+  --bg-base: #f4f4f5;
+  /* Zinc 100 - base cálida y moderna */
+  --bg-surface: #ffffff;
+  /* Superficies: tarjetas, modales, sidebar */
+  --bg-elevated: #fafafa;
+  /* Hover de filas, áreas diferenciadas */
+  --bg-subtle: #e4e4e7;
+  /* Inputs, chips, separadores */
 
-  /* Tipografía */
-  --text-primary: #1a1a2e; /* casi negro — máximo contraste */
-  --text-secondary: #52526b; /* gris azulado — datos secundarios */
-  --text-muted: #9090a8; /* placeholders, metadata */
-  --text-disabled: #c0c0d0; /* estados deshabilitados */
+  /* --- 2. TIPOGRAFÍA (Light Mode) --- */
+  --text-primary: #09090b;
+  /* Zinc 950 - casi negro, máxima legibilidad */
+  --text-secondary: #52525b;
+  /* Zinc 600 - datos secundarios */
+  --text-muted: #a1a1aa;
+  /* Zinc 400 - placeholders, metadata */
+  --text-disabled: #d4d4d8;
+  /* Estados deshabilitados */
 
-  /* Bordes */
-  --border-subtle: rgba(0, 0, 0, 0.05);
-  --border-default: rgba(0, 0, 0, 0.09);
-  --border-strong: rgba(0, 0, 0, 0.16);
+  /* --- 3. BORDES Y SEPARADORES (Light Mode) --- */
+  --border-subtle: rgba(9, 9, 11, 0.06);
+  --border-default: rgba(9, 9, 11, 0.12);
+  --border-strong: rgba(9, 9, 11, 0.20);
 
-  /* Sombras — sistema de 3 niveles */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.1),
-    0 24px 48px rgba(0, 0, 0, 0.06);
-  /* Fallback para tema (se sobrescribe en [data-theme]) */
-  --color-primary: #9b1d20;
-  --color-primary-hover: #c42b2f;
-  --color-primary-muted: rgba(155, 29, 32, 0.08);
+  /* --- 4. COLOR PRIMARIO (Trust Blue) --- */
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-dark: #1e40af;
+  /* Variable puente para color-mix: white en light, bg-elevated en dark */
+  --bg-surface-mix: #ffffff;
+
+  --color-primary-muted: rgba(37, 99, 235, 0.08);
+  --color-primary-tint: rgba(37, 99, 235, 0.04);
   --color-primary-text: #ffffff;
-  --accent-border: rgba(155, 29, 32, 0.2);
-  --accent-glow: rgba(155, 29, 32, 0.1);
-  --gradient-subtle: linear-gradient(
-    135deg,
-    rgba(155, 29, 32, 0.06) 0%,
-    rgba(155, 29, 32, 0.02) 100%
-  );
-
+  --accent-border: rgba(37, 99, 235, 0.2);
+  --accent-glow: rgba(37, 99, 235, 0.15);
+  --bg-glass-surface: rgba(255, 255, 255, 0.92);
+  --gradient-primary: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  --gradient-subtle: linear-gradient(135deg,
+      rgba(37, 99, 235, 0.06) 0%,
+      rgba(37, 99, 235, 0.02) 100%);
   --shadow-focus: 0 0 0 3px var(--color-primary-muted);
 
-  /* Layout premium — sombras suaves para topbar/sidebar (sin bordes duros) */
-  --shadow-layout-topbar: 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-layout-sidebar: 4px 0 24px -4px rgba(0, 0, 0, 0.04),
-    1px 0 0 0 rgba(0, 0, 0, 0.02);
-  --shadow-layout-divider: 1px 0 0 0 var(--border-subtle);
-
-  /* Overlay drawer mobile — sutil, no plomo */
-  --overlay-backdrop: rgba(0, 0, 0, 0.25);
-
-  /* Brand colors — para selector de escuela (mostrar ambas a la vez) */
-  --brand-school-a: #9b1d20;
-  --brand-school-b: #1b3f6e;
-
-  /* Estados — diferenciados del color primario */
+  /* --- 5. ESTADOS SEMÁNTICOS (Light Mode) --- */
   --state-success: #16a34a;
   --state-success-bg: #f0fdf4;
   --state-success-border: #bbf7d0;
+
   --state-warning: #d97706;
   --state-warning-bg: #fffbeb;
   --state-warning-border: #fde68a;
-  --state-error: #dc2626; /* rojo SOLO para errores, nunca como marca */
+
+  --state-error: #dc2626;
+  /* rojo SOLO para errores, nunca como marca */
   --state-error-bg: #fef2f2;
   --state-error-border: #fecaca;
+
   --state-info: #0284c7;
   --state-info-bg: #f0f9ff;
   --state-info-border: #bae6fd;
 
-  /* Radius — sistema Apple */
+  /* --- 6. SOMBRAS Y ELEVACIÓN (Apple Style - Light) --- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.02);
+
+  --shadow-layout-topbar: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-layout-sidebar: 4px 0 24px -4px rgba(0, 0, 0, 0.03), 1px 0 0 0 var(--border-subtle);
+  --shadow-layout-divider: 1px 0 0 0 var(--border-subtle);
+  --overlay-backdrop: rgba(9, 9, 11, 0.4);
+
+  /* --- 7. ESTRUCTURA Y GEOMETRÍA (Variables estáticas) --- */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -80,14 +89,47 @@
   --radius-full: 9999px;
 
   /* Motion — duraciones estándar (UX premium) */
-  --duration-instant: 100ms; /* feedback inmediato */
-  --duration-fast: 200ms; /* micro-interacciones */
-  --duration-normal: 300ms; /* transiciones de página */
-  --duration-slow: 450ms; /* modales, overlays */
-  --duration-slower: 600ms; /* efectos especiales */
-  /* Page transition — híbrido premium (salida 180ms, entrada 280ms) */
+  --duration-instant: 100ms;
+  --duration-fast: 200ms;
+  --duration-normal: 300ms;
+  --duration-slow: 450ms;
+  --duration-slower: 600ms;
   --duration-page-out: 180ms;
   --duration-page-in: 280ms;
+
+  /* --- 8. TIPOGRAFÍA SISTEMA --- */
+  --font-display: 'SF Pro Display', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body: 'SF Pro Text', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'SF Mono', 'JetBrains Mono', monospace;
+
+  --text-xs: 0.75rem;
+  /* 12px */
+  --text-sm: 0.875rem;
+  /* 14px */
+  --text-base: 1rem;
+  /* 16px */
+  --text-lg: 1.125rem;
+  /* 18px */
+  --text-xl: 1.25rem;
+  /* 20px */
+  --text-2xl: 1.5rem;
+  /* 24px */
+  --text-3xl: 1.875rem;
+  /* 30px */
+  --text-4xl: 2.25rem;
+  /* 36px */
+  --text-5xl: 3rem;
+  /* 48px */
+
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
 
   /* Espaciado base 4px */
   --space-1: 4px;
@@ -101,36 +143,90 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* Tipografía — sistema */
-  --font-display: 'SF Pro Display', 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-body: 'SF Pro Text', 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-mono: 'SF Mono', 'JetBrains Mono', monospace;
-
-  --text-xs: 0.75rem; /* 12px */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.125rem; /* 18px */
-  --text-xl: 1.25rem; /* 20px */
-  --text-2xl: 1.5rem; /* 24px */
-  --text-3xl: 1.875rem; /* 30px */
-  --text-4xl: 2.25rem; /* 36px */
-  --text-5xl: 3rem; /* 48px */
-
-  --font-regular: 400;
-  --font-medium: 500;
-  --font-semibold: 600;
-  --font-bold: 700;
-
-  --leading-tight: 1.25;
-  --leading-snug: 1.375;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.625;
+  /* Brand colors — legacy para selector de escuela */
+  --brand-school-a: #9b1d20;
+  --brand-school-b: #1b3f6e;
 }
 
 /* ============================================
-   TEMA ROJO — Escuela A
+   TEMA OSCURO (Dark Mode)
+   Personalidad: Inmersivo, técnico, enfocado
+   Activado con: [data-mode='dark']
+   ============================================ */
+[data-mode='dark'] {
+  /* --- 1. FONDOS Y SUPERFICIES (Dark) --- */
+  --bg-base: #09090b;
+  /* Fondo ultra profundo para reducir fatiga visual */
+  --bg-surface: #18181b;
+  /* Elevación base para tarjetas */
+  --bg-elevated: #27272a;
+  /* Elementos interactivos o modales */
+  --bg-subtle: #27272a;
+
+  /* Variable puente para color-mix en dark mode */
+  --bg-surface-mix: #27272a;
+
+  /* --- 2. TIPOGRAFÍA (Dark) --- */
+  --text-primary: #f4f4f5;
+  /* Blanco suave, evita el "halo" en pantallas */
+  --text-secondary: #a1a1aa;
+  /* Gris claro para lectura extendida */
+  --text-muted: #71717a;
+  --text-disabled: #52525b;
+
+  /* --- 3. BORDES Y SEPARADORES (Dark) --- */
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+
+  /* --- 4. COLOR PRIMARIO (Dark Adjusted - WCAG compliant) --- */
+  --color-primary: #3b82f6;
+  /* Azul más luminoso para pasar contraste WCAG */
+  --color-primary-hover: #60a5fa;
+  --color-primary-dark: #2563eb;
+  --color-primary-muted: rgba(59, 130, 246, 0.15);
+  --color-primary-tint: rgba(59, 130, 246, 0.08);
+  --color-primary-text: #ffffff;
+  --accent-border: rgba(59, 130, 246, 0.25);
+  --accent-glow: rgba(59, 130, 246, 0.25);
+  --bg-glass-surface: rgba(24, 24, 27, 0.85);
+  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  --gradient-subtle: linear-gradient(135deg,
+      rgba(59, 130, 246, 0.12) 0%,
+      rgba(59, 130, 246, 0.04) 100%);
+  --shadow-focus: 0 0 0 3px rgba(59, 130, 246, 0.3);
+
+  /* --- 5. ESTADOS SEMÁNTICOS (Dark - Glass Effect) --- */
+  --state-success: #4ade80;
+  --state-success-bg: rgba(74, 222, 128, 0.10);
+  --state-success-border: rgba(74, 222, 128, 0.20);
+
+  --state-warning: #fbbf24;
+  --state-warning-bg: rgba(251, 191, 36, 0.10);
+  --state-warning-border: rgba(251, 191, 36, 0.20);
+
+  --state-error: #f87171;
+  --state-error-bg: rgba(248, 113, 113, 0.10);
+  --state-error-border: rgba(248, 113, 113, 0.20);
+
+  --state-info: #38bdf8;
+  --state-info-bg: rgba(56, 189, 248, 0.10);
+  --state-info-border: rgba(56, 189, 248, 0.20);
+
+  /* --- 6. SOMBRAS Y ELEVACIÓN (Micro-bordes en Dark) --- */
+  --shadow-sm: 0 0 0 1px var(--border-subtle);
+  --shadow-md: 0 0 0 1px var(--border-default), 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 0 0 1px var(--border-default), 0 8px 32px rgba(0, 0, 0, 0.6);
+
+  --shadow-layout-topbar: 0 1px 0 0 var(--border-subtle);
+  --shadow-layout-sidebar: 1px 0 0 0 var(--border-subtle);
+  --shadow-layout-divider: 1px 0 0 0 var(--border-subtle);
+  --overlay-backdrop: rgba(0, 0, 0, 0.7);
+}
+
+/* ============================================
+   TEMA DE COLOR — Rojo (Escuela A)
    Personalidad: autoridad, tradición, prestigio
-   Referencia: universidades europeas, bancos centenarios
    ============================================ */
 [data-theme='red'] {
   --color-primary: #9b1d20;
@@ -141,20 +237,31 @@
   --color-primary-text: #ffffff;
 
   --gradient-primary: linear-gradient(135deg, #9b1d20 0%, #c42b2f 100%);
-  --gradient-subtle: linear-gradient(
-    135deg,
-    rgba(155, 29, 32, 0.06) 0%,
-    rgba(155, 29, 32, 0.02) 100%
-  );
+  --gradient-subtle: linear-gradient(135deg,
+      rgba(155, 29, 32, 0.06) 0%,
+      rgba(155, 29, 32, 0.02) 100%);
 
   --accent-border: rgba(155, 29, 32, 0.2);
   --accent-glow: rgba(155, 29, 32, 0.1);
+  --shadow-focus: 0 0 0 3px rgba(155, 29, 32, 0.15);
+}
+
+/* Red en Dark Mode */
+[data-mode='dark'][data-theme='red'],
+[data-theme='red'][data-mode='dark'] {
+  --color-primary: #f87171;
+  --color-primary-hover: #fca5a5;
+  --color-primary-dark: #ef4444;
+  --color-primary-muted: rgba(248, 113, 113, 0.15);
+  --color-primary-tint: rgba(248, 113, 113, 0.08);
+  --accent-border: rgba(248, 113, 113, 0.25);
+  --accent-glow: rgba(248, 113, 113, 0.20);
+  --shadow-focus: 0 0 0 3px rgba(248, 113, 113, 0.3);
 }
 
 /* ============================================
-   TEMA AZUL — Escuela B
+   TEMA DE COLOR — Azul (Escuela B)
    Personalidad: solidez, confianza, profesionalismo
-   Referencia: marina, aviación, banca europea
    ============================================ */
 [data-theme='blue'] {
   --color-primary: #1b3f6e;
@@ -165,26 +272,47 @@
   --color-primary-text: #ffffff;
 
   --gradient-primary: linear-gradient(135deg, #1b3f6e 0%, #2557a0 100%);
-  --gradient-subtle: linear-gradient(
-    135deg,
-    rgba(27, 63, 110, 0.06) 0%,
-    rgba(27, 63, 110, 0.02) 100%
-  );
+  --gradient-subtle: linear-gradient(135deg,
+      rgba(27, 63, 110, 0.06) 0%,
+      rgba(27, 63, 110, 0.02) 100%);
 
   --accent-border: rgba(27, 63, 110, 0.2);
   --accent-glow: rgba(27, 63, 110, 0.1);
+  --shadow-focus: 0 0 0 3px rgba(27, 63, 110, 0.15);
+}
+
+/* Blue en Dark Mode */
+[data-mode='dark'][data-theme='blue'],
+[data-theme='blue'][data-mode='dark'] {
+  --color-primary: #60a5fa;
+  --color-primary-hover: #93c5fd;
+  --color-primary-dark: #3b82f6;
+  --color-primary-muted: rgba(96, 165, 250, 0.15);
+  --color-primary-tint: rgba(96, 165, 250, 0.08);
+  --accent-border: rgba(96, 165, 250, 0.25);
+  --accent-glow: rgba(96, 165, 250, 0.20);
+  --shadow-focus: 0 0 0 3px rgba(96, 165, 250, 0.3);
 }
 
 /* ============================================
-   Global Typography Override
-   Solo transición de color permitida
+   Global Overrides & Smoothing
+   Transición suave entre temas
    ============================================ */
-* {
-  transition: color 0.18s ease;
+*,
+*::before,
+*::after {
+  transition:
+    background-color var(--duration-normal) ease,
+    color var(--duration-normal) ease,
+    border-color var(--duration-normal) ease,
+    box-shadow var(--duration-normal) ease;
 }
 
 body {
   font-family: var(--font-body);
   background: var(--bg-base);
   color: var(--text-primary);
+  /* Renderizado premium de fuentes — indispensable para dark mode */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
